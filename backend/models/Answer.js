@@ -1,10 +1,21 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const answerSchema = new mongoose.Schema({
-  questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
-  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  content: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
-});
+  content: {
+    type: String,
+    required: [true, 'Answer content is required'],
+    trim: true
+  },
+  question: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Question',
+    required: true
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
+}, { timestamps: true });
 
-module.exports = mongoose.model("Answer", answerSchema);
+module.exports = mongoose.model('Answer', answerSchema);

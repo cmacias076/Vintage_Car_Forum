@@ -1,9 +1,12 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/auth');
+const { createAnswer, getAnswersForQuestion } = require('../controllers/answerController');
 
-// test route
-router.get("/answers", (req, res) => {
-  res.json([{ id: 1, content: "Try sandblasting then primer coat", authorId: "user123" }]);
-});
+// POST /api/answers - create answer (protected)
+router.post('/answers', auth, createAnswer);
+
+// GET /api/questions/:questionId/answers - get answers for question
+router.get('/questions/:questionId/answers', getAnswersForQuestion);
 
 module.exports = router;
