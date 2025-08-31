@@ -1,0 +1,14 @@
+# dependencies
+frontend/node_modules/
+backend/node_modules/
+
+# environment variables
+frontend/.env
+backend/.env
+
+# logs
+*.log
+logs/
+
+# system files
+.DS_Store
