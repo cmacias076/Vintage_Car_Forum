@@ -1,21 +1,27 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const answerSchema = new mongoose.Schema({
-  content: {
-    type: String,
-    required: [true, 'Answer content is required'],
-    trim: true
+const answerSchema = new mongoose.Schema(
+  {
+    content: {
+      type: String,
+      required: true,
+    },
+    questionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Question",
+      required: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  question: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Question',
-    required: true
-  },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+  { 
+    timestamps: true,
   }
-}, { timestamps: true });
+);
 
-module.exports = mongoose.model('Answer', answerSchema);
+const Answer = mongoose.model("Answer", answerSchema);
+
+module.exports = Answer;

@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");  // Add this
+const categoryRoutes = require("./routes/categoryRoutes");
 const questionRoutes = require("./routes/questionRoutes");
 const answerRoutes = require("./routes/answerRoutes");
 
@@ -15,9 +15,9 @@ app.use(express.json());
 
 // API routes
 app.use("/api/auth", authRoutes); 
-app.use("/api/categories", categoryRoutes);  // Use categoryRoutes here
-app.use("/api/question", questionRoutes);
-app.use("/api/answer", answerRoutes);
+app.use("/api/categories", categoryRoutes); 
+app.use("/api/questions", questionRoutes); 
+app.use("/api/answer", answerRoutes);  
 
 app.get("/", (req, res) => {
   res.send("Vintage Car Forum API running...");

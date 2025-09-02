@@ -1,19 +1,19 @@
 const express = require("express");
 const router = express.Router();
-
+const authMiddleware = require("../middleware/auth");
 const {
   createQuestion,
   getQuestions,
   getQuestionById,
 } = require("../controllers/questionController");
 
-const auth = require("../middleware/auth"); // correct import
+// POST - Create a question
+router.post("/", authMiddleware, createQuestion);
 
-// Protected: only logged-in users can post
-router.post("/questions", auth, createQuestion);
+// GET - List all questions
+router.get("/", getQuestions);
 
-// Public: anyone can view
-router.get("/questions", getQuestions);
-router.get("/questions/:id", getQuestionById);
+// GET - Single question by ID
+router.get("/:id", getQuestionById);
 
 module.exports = router;

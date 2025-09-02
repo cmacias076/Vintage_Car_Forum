@@ -1,4 +1,3 @@
-// controllers/questionController.js
 const Question = require("../models/Question");
 const Category = require("../models/Category");
 
@@ -11,6 +10,18 @@ const createQuestion = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Check for existing question with the same title, content, and category
+    const existingQuestion = await Question.findOne({
+      title,
+      content,
+      categoryId: category,
+      userId: req.user.id,
+    });
+
+    if (existingQuestion) {
+      return res.status(400).json({ message: "Duplicate question not allowed" });
+    }
+
     // Make sure category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
@@ -20,13 +31,13 @@ const createQuestion = async (req, res) => {
     const question = new Question({
       title,
       content,
-      category,
-      user: req.user.id, // from auth middleware
+      categoryId: category,
+      userId: req.user.id, 
     });
 
     await question.save();
 
-    res.status(201).json(question);
+    res.status(201).json({ message: "Question created successfully", question });
   } catch (err) {
     console.error("Error creating question:", err.message);
     res.status(500).json({ message: "Server error" });
@@ -37,8 +48,8 @@ const createQuestion = async (req, res) => {
 const getQuestions = async (req, res) => {
   try {
     const questions = await Question.find()
-      .populate("category", "name")
-      .populate("user", "username");
+      .populate("categoryId", "name") 
+      .populate("userId", "username"); 
     res.json(questions);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -49,8 +60,8 @@ const getQuestions = async (req, res) => {
 const getQuestionById = async (req, res) => {
   try {
     const question = await Question.findById(req.params.id)
-      .populate("category", "name")
-      .populate("user", "username");
+      .populate("categoryId", "name") 
+      .populate("userId", "username"); 
 
     if (!question) {
       return res.status(404).json({ message: "Question not found" });
