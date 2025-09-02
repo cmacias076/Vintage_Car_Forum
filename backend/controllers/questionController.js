@@ -1,70 +1,69 @@
-const mongoose = require('mongoose');
-const Question = require('../models/Question');
-const Category = require('../models/Category');
+// controllers/questionController.js
+const Question = require("../models/Question");
+const Category = require("../models/Category");
 
+// Create a new question
 const createQuestion = async (req, res) => {
   try {
     const { title, content, category } = req.body;
-    const userId = req.user && req.user.id;
-    if (!userId) return res.status(401).json({ message: 'Authentication required' });
 
-    if (!title || !title.trim()) return res.status(400).json({ message: 'Title is required' });
-    if (!content || !content.trim()) return res.status(400).json({ message: 'Content is required' });
-    if (!content.trim().endsWith('?')) return res.status(400).json({ message: 'Question must end with a question mark' });
-
-    if (!category || !mongoose.Types.ObjectId.isValid(category)) {
-      return res.status(400).json({ message: 'Valid category id is required' });
+    if (!title || !content || !category) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const cat = await Category.findById(category);
-    if (!cat) return res.status(404).json({ message: 'Category not found' });
+    // Make sure category exists
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) {
+      return res.status(404).json({ message: "Category not found" });
+    }
 
-    const q = new Question({
-      title: title.trim(),
-      content: content.trim(),
+    const question = new Question({
+      title,
+      content,
       category,
-      user: userId
+      user: req.user.id, // from auth middleware
     });
 
-    await q.save();
-    await q.populate('category', 'name');
-    await q.populate('user', 'username');
+    await question.save();
 
-    return res.status(201).json(q);
+    res.status(201).json(question);
   } catch (err) {
-    console.error('createQuestion error', err);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("Error creating question:", err.message);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-const getQuestionsByCategory = async (req, res) => {
+// Get all questions
+const getQuestions = async (req, res) => {
   try {
-    const { categoryId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(categoryId)) return res.status(400).json({ message: 'Invalid category id' });
-
-    const qs = await Question.find({ category: categoryId })
-      .populate('user', 'username')
-      .populate('category', 'name')
-      .sort({ createdAt: -1 });
-
-    res.json(qs);
+    const questions = await Question.find()
+      .populate("category", "name")
+      .populate("user", "username");
+    res.json(questions);
   } catch (err) {
-    console.error('getQuestionsByCategory error', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
   }
 };
 
-const getAllQuestions = async (req, res) => {
+// Get single question by ID
+const getQuestionById = async (req, res) => {
   try {
-    const qs = await Question.find()
-      .populate('user', 'username')
-      .populate('category', 'name')
-      .sort({ createdAt: -1 });
-    res.json(qs);
+    const question = await Question.findById(req.params.id)
+      .populate("category", "name")
+      .populate("user", "username");
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    res.json(question);
   } catch (err) {
-    console.error('getAllQuestions error', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = { createQuestion, getQuestionsByCategory, getAllQuestions };
+module.exports = {
+  createQuestion,
+  getQuestions,
+  getQuestionById,
+};

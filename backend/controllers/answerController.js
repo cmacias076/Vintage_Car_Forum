@@ -1,50 +1,47 @@
-const mongoose = require('mongoose');
-const Answer = require('../models/Answer');
-const Question = require('../models/Question');
+const Answer = require("../models/Answer");
+const Question = require("../models/Question");
 
+// Create a new answer
 const createAnswer = async (req, res) => {
   try {
-    const { questionId, content } = req.body;
-    const userId = req.user && req.user.id;
-    if (!userId) return res.status(401).json({ message: 'Authentication required' });
+    const { content } = req.body;
+    const { questionId } = req.params;
 
-    if (!content || !content.trim()) return res.status(400).json({ message: 'Answer cannot be empty' });
-    if (!mongoose.Types.ObjectId.isValid(questionId)) return res.status(400).json({ message: 'Invalid question id' });
+    if (!content) {
+      return res.status(400).json({ message: "Content is required" });
+    }
 
     const question = await Question.findById(questionId);
-    if (!question) return res.status(404).json({ message: 'Question not found' });
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
 
     const answer = new Answer({
-      content: content.trim(),
+      content,
       question: questionId,
-      user: userId
+      user: req.user._id,
     });
 
     await answer.save();
-    await answer.populate('user', 'username');
-    await answer.populate('question', 'title');
 
     res.status(201).json(answer);
   } catch (err) {
-    console.error('createAnswer error', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
   }
 };
 
-const getAnswersForQuestion = async (req, res) => {
+// Get all answers for a question
+const getAnswersByQuestion = async (req, res) => {
   try {
-    const { questionId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(questionId)) return res.status(400).json({ message: 'Invalid question id' });
-
-    const answers = await Answer.find({ question: questionId })
-      .populate('user', 'username')
-      .sort({ createdAt: 1 });
-
+    const answers = await Answer.find({ question: req.params.questionId })
+      .populate("user", "username");
     res.json(answers);
   } catch (err) {
-    console.error('getAnswersForQuestion error', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = { createAnswer, getAnswersForQuestion };
+module.exports = {
+  createAnswer,
+  getAnswersByQuestion,
+};

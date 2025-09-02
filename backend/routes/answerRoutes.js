@@ -1,12 +1,17 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const auth = require('../middleware/auth');
-const { createAnswer, getAnswersForQuestion } = require('../controllers/answerController');
 
-// POST /api/answers - create answer (protected)
-router.post('/answers', auth, createAnswer);
+const {
+  createAnswer,
+  getAnswersByQuestion,
+} = require("../controllers/answerController");
 
-// GET /api/questions/:questionId/answers - get answers for question
-router.get('/questions/:questionId/answers', getAnswersForQuestion);
+const auth = require("../middleware/auth"); // correct import
+
+// Protected: only logged-in users can answer
+router.post("/answers", auth, createAnswer);
+
+// Public: fetch answers for a question
+router.get("/answers/:questionId", getAnswersByQuestion);
 
 module.exports = router;

@@ -1,25 +1,43 @@
-const express = require("express");
-const Category = require("../models/Category");
+const express = require('express');
 const router = express.Router();
+const Category = require('../models/Category');
+const authMiddleware = require('../middleware/auth'); // Ensure you have this middleware
 
-// Create category
-router.post("/categories", async (req, res) => {
+// POST - Create a new category (requires auth)
+router.post('/', authMiddleware, async (req, res) => {
   try {
-    const category = new Category(req.body);
-    await category.save();
-    res.status(201).json(category);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    const { name } = req.body;
+
+    // Check if category name is provided
+    if (!name) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
+
+    // Check if the category already exists
+    const existingCategory = await Category.findOne({ name });
+    if (existingCategory) {
+      return res.status(400).json({ message: "Category already exists" });
+    }
+
+    // Create the category
+    const newCategory = new Category({ name });
+    await newCategory.save();
+
+    res.status(201).json({ message: "Category created successfully", category: newCategory });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
-// Get all categories
-router.get("/categories", async (req, res) => {
+// GET - Retrieve all categories (requires authentication)
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const categories = await Category.find();
     res.json(categories);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 

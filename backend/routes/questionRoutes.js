@@ -1,15 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const auth = require('../middleware/auth');
-const { createQuestion, getQuestionsByCategory, getAllQuestions } = require('../controllers/questionController');
 
-// POST /api/questions  (protected) - user pulled from JWT, do not send "user" in body
-router.post('/questions', auth, createQuestion);
+const {
+  createQuestion,
+  getQuestions,
+  getQuestionById,
+} = require("../controllers/questionController");
 
-// GET /api/questions - all questions
-router.get('/questions', getAllQuestions);
+const auth = require("../middleware/auth"); // correct import
 
-// GET /api/categories/:categoryId/questions - questions in a category
-router.get('/categories/:categoryId/questions', getQuestionsByCategory);
+// Protected: only logged-in users can post
+router.post("/questions", auth, createQuestion);
+
+// Public: anyone can view
+router.get("/questions", getQuestions);
+router.get("/questions/:id", getQuestionById);
 
 module.exports = router;

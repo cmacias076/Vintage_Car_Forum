@@ -4,28 +4,26 @@ const cors = require("cors");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");  // Add this
 const questionRoutes = require("./routes/questionRoutes");
 const answerRoutes = require("./routes/answerRoutes");
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-// routes
-app.use("/api", authRoutes);
-app.use("/api", categoryRoutes);
-app.use("/api", questionRoutes);
-app.use("/api", answerRoutes);
+app.use(cors());
+app.use(express.json());
+
+// API routes
+app.use("/api/auth", authRoutes); 
+app.use("/api/categories", categoryRoutes);  // Use categoryRoutes here
+app.use("/api/question", questionRoutes);
+app.use("/api/answer", answerRoutes);
 
 app.get("/", (req, res) => {
-  res.send(" Vintage Car Forum API running...");
+  res.send("Vintage Car Forum API running...");
 });
 
-
-console.log("MONGO_URI:", process.env.MONGO_URI);
-
-// connect DB + start server
+// MongoDB connection + server start
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
