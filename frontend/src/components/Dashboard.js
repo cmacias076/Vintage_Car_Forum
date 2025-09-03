@@ -7,6 +7,15 @@ import {
   createQuestion,
 } from "../api";
 
+function asArray(maybeArray, nestedKey) {
+  if (Array.isArray(maybeArray)) return maybeArray;
+  if (maybeArray && nestedKey && Array.isArray(maybeArray[nestedKey])) {
+    return maybeArray[nestedKey];
+  }
+  // Fallback
+  return [];
+}
+
 function Dashboard() {
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -19,66 +28,82 @@ function Dashboard() {
   const [newQuestionContent, setNewQuestionContent] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  // Load user, categories, questions
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-
     if (!token) {
       setError("You are not logged in. Please login first.");
       return;
     }
 
+    // Fetch current user
     fetchUser()
       .then((data) => {
-        if (data.user) {
+        if (data && data.user) {
           setUser(data.user);
         } else {
-          setError(data.message || "Failed to fetch user");
+          setError((data && data.message) || "Failed to fetch user");
         }
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message || "Failed to fetch user"));
 
+    // Fetch categories
     fetchCategories()
-      .then((data) => setCategories(data))
+      .then((data) => {
+        const list = asArray(data, "categories");
+        setCategories(list);
+      })
       .catch((err) => console.error("Categories error:", err));
 
+    // Fetch questions 
     fetchQuestions()
-      .then((data) => setQuestions(data))
+      .then((data) => {
+        const list = asArray(data, "questions");
+        setQuestions(list);
+      })
       .catch((err) => console.error("Questions error:", err));
   }, []);
 
-  // Handle new category
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!newCategory) return;
+    if (!newCategory.trim()) return;
 
-    const data = await createCategory(newCategory);
-    if (data._id) {
-      setCategories([...categories, data]);
+    const data = await createCategory(newCategory.trim());
+    const created =
+      (data && data.category) || (data && data._id && data) || null;
+
+    if (created) {
+      setCategories((prev) => [...prev, created]);
       setNewCategory("");
     } else {
-      alert(data.message || "Failed to create category");
+      alert((data && data.message) || "Failed to create category");
     }
   };
 
-  // Handle new question
   const handleAddQuestion = async (e) => {
     e.preventDefault();
-    if (!newQuestionTitle || !newQuestionContent || !selectedCategory) return;
+    if (
+      !newQuestionTitle.trim() ||
+      !newQuestionContent.trim() ||
+      !selectedCategory
+    )
+      return;
 
     const data = await createQuestion(
-      newQuestionTitle,
-      newQuestionContent,
+      newQuestionTitle.trim(),
+      newQuestionContent.trim(),
       selectedCategory
     );
 
-    if (data._id) {
-      setQuestions([...questions, data]);
+    const created =
+      (data && data.question) || (data && data._id && data) || null;
+
+    if (created) {
+      setQuestions((prev) => [...prev, created]);
       setNewQuestionTitle("");
       setNewQuestionContent("");
       setSelectedCategory("");
     } else {
-      alert(data.message || "Failed to create question");
+      alert((data && data.message) || "Failed to create question");
     }
   };
 
@@ -93,17 +118,19 @@ function Dashboard() {
         </p>
       )}
 
-      {/* Category Section */}
+      {/* Categories */}
       <h3>Categories</h3>
       <ul>
-        {categories.length > 0 ? (
-          categories.map((cat) => <li key={cat._id}>{cat.name}</li>)
+        {Array.isArray(categories) && categories.length > 0 ? (
+          categories.map((cat) => (
+            <li key={cat._id || cat.id || cat.name}>{cat.name}</li>
+          ))
         ) : (
           <li>No categories found</li>
         )}
       </ul>
 
-      <form onSubmit={handleAddCategory}>
+      <form onSubmit={handleAddCategory} style={{ marginBottom: 24 }}>
         <input
           type="text"
           value={newCategory}
@@ -113,13 +140,14 @@ function Dashboard() {
         <button type="submit">Add Category</button>
       </form>
 
-      {/* Questions Section */}
+      {/* Questions */}
       <h3>Questions</h3>
       <ul>
-        {questions.length > 0 ? (
+        {Array.isArray(questions) && questions.length > 0 ? (
           questions.map((q) => (
-            <li key={q._id}>
-              <strong>{q.title}</strong>: {q.content}{" "}
+            <li key={q._id || q.id}>
+              <strong>{q.title || "(No title)"}</strong>:{" "}
+              {q.content || "(No content)"}{" "}
               (Category: {q.category?.name || "N/A"})
             </li>
           ))
@@ -149,11 +177,12 @@ function Dashboard() {
           required
         >
           <option value="">Select category</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
+          {Array.isArray(categories) &&
+            categories.map((cat) => (
+              <option key={cat._id || cat.id} value={cat._id || cat.id}>
+                {cat.name}
+              </option>
+            ))}
         </select>
         <button type="submit">Add Question</button>
       </form>
