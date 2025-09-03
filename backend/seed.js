@@ -1,6 +1,5 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const User = require("./models/User");
 const Category = require("./models/Category");
@@ -11,18 +10,21 @@ async function run() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("Mongo connected");
 
-  // 1) Ensure demo user
+  // 1) Ensure demo user (store PLAIN password here; pre-save will hash ONCE)
   const email = "demo@example.com";
   const username = "demo";
-  const password = "Passw0rd!";
-  const passwordHash = await bcrypt.hash(password, 10);
+  const password = "Passw0rd!"; 
 
   let demoUser = await User.findOne({ email });
   if (!demoUser) {
-    demoUser = await User.create({ username, email, passwordHash });
+    demoUser = new User({ username, email, passwordHash: password });
+    await demoUser.save();
     console.log("Created demo user:", email);
   } else {
-    console.log("Demo user already exists:", email);
+    // Reset password so you know the correct creds for demos
+    demoUser.passwordHash = password; 
+    await demoUser.save();
+    console.log("Reset demo user password:", email);
   }
 
   // 2) Seed categories (idempotent)
@@ -38,10 +40,7 @@ async function run() {
   for (const c of cats) {
     const found = await Category.findOne({ name: c.name });
     if (found) upsertedCats.push(found);
-    else {
-      const created = await Category.create(c);
-      upsertedCats.push(created);
-    }
+    else upsertedCats.push(await Category.create(c));
   }
 
   // 3) Seed one question per category (only if none exist)
@@ -66,7 +65,6 @@ async function run() {
       user: demoUser._id,
     });
 
-    // answers (sample)
     await Answer.create({
       questionId: q1._id,
       authorId: demoUser._id,
@@ -83,7 +81,4 @@ async function run() {
   await mongoose.disconnect();
 }
 
-run().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+run
