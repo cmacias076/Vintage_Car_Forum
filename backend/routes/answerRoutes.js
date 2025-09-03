@@ -1,12 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const answerController = require('../controllers/answerController');
-const authMiddleware = require('../middlewares/auth');
 
-// POST - Create an answer
-router.post('/', authMiddleware, answerController.createAnswer);
+const { getAnswersForQuestion, postAnswer } = require("../controllers/answerController");
+const auth = require("../middlewares/auth"); 
 
-// GET - Get all answers for a specific question
-router.get('/:questionId/answers', answerController.getAnswersForQuestion);
+// Public: list answers for a question
+router.get("/questions/:questionId/answers", getAnswersForQuestion);
+
+// Protected: post an answer
+router.post("/questions/:questionId/answers", auth, postAnswer);
 
 module.exports = router;

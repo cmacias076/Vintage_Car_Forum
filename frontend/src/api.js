@@ -6,7 +6,7 @@ const getAuthHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// AUTH
+// ---- AUTH ----
 export const registerUser = async (username, email, password) => {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
@@ -32,25 +32,30 @@ export const fetchUser = async () => {
   return res.json();
 };
 
-// CATEGORIES
+// ---- CATEGORIES ----
 export const fetchCategories = async () => {
   const res = await fetch(`${API_URL}/categories`);
   return res.json();
 };
 
-export const createCategory = async (name) => {
+export const createCategory = async (name, description = "") => {
   const res = await fetch(`${API_URL}/categories`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, description }),
   });
   return res.json();
 };
 
-// QUESTIONS
+// ---- QUESTIONS ----
 export const fetchQuestions = async () => {
   const res = await fetch(`${API_URL}/questions`);
-  return res.json();
+  return res.json(); // array
+};
+
+export const fetchQuestionsByCategory = async (categoryId) => {
+  const res = await fetch(`${API_URL}/categories/${categoryId}/questions`);
+  return res.json(); // array
 };
 
 export const createQuestion = async (title, content, categoryId) => {
@@ -62,18 +67,15 @@ export const createQuestion = async (title, content, categoryId) => {
   return res.json();
 };
 
-// NEW: single question
 export const fetchQuestionById = async (questionId) => {
   const res = await fetch(`${API_URL}/questions/${questionId}`);
-  return res.json();
+  return res.json(); // question object
 };
 
-// ANSWERS
+// ---- ANSWERS ----
 export const fetchAnswers = async (questionId) => {
-  const res = await fetch(`${API_URL}/questions/${questionId}/answers`, {
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
-  });
-  return res.json();
+  const res = await fetch(`${API_URL}/questions/${questionId}/answers`);
+  return res.json(); // array
 };
 
 export const postAnswer = async (questionId, content) => {
@@ -82,5 +84,5 @@ export const postAnswer = async (questionId, content) => {
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ content }),
   });
-  return res.json();
+  return res.json(); // created answer
 };

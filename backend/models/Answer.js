@@ -2,26 +2,23 @@ const mongoose = require("mongoose");
 
 const answerSchema = new mongoose.Schema(
   {
-    content: {
-      type: String,
-      required: true,
-    },
+    content: { type: String, required: true, trim: true },
     questionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Question",
       required: true,
+      index: true,
     },
-    userId: {
+    authorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
   },
-  { 
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const Answer = mongoose.model("Answer", answerSchema);
+answerSchema.index({ createdAt: 1 });
 
-module.exports = Answer;
+module.exports = mongoose.model("Answer", answerSchema);

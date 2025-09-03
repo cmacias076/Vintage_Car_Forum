@@ -1,71 +1,58 @@
-const Answer = require('../models/Answer');
-const Question = require('../models/Question');
+const mongoose = require("mongoose");
+const Answer = require("../models/Answer");
+const Question = require("../models/Question");
 
-// Create a new answer for a question
-const createAnswer = async (req, res) => {
-  try {
-    const { content, questionId } = req.body;
-
-    // Check if content and questionId are provided
-    if (!content || !questionId) {
-      return res.status(400).json({ message: 'Content and questionId are required' });
-    }
-
-    // Ensure the question exists in the database
-    const question = await Question.findById(questionId);
-    if (!question) {
-      return res.status(404).json({ message: 'Question not found' });
-    }
-
-    // Create the answer object and save it
-    const newAnswer = new Answer({
-      content,
-      questionId, 
-      userId: req.user._id, 
-    });
-
-    await newAnswer.save();
-
-    // Respond with the newly created answer
-    return res.status(201).json({
-      message: 'Answer created successfully',
-      answer: newAnswer,
-    });
-  } catch (err) {
-    console.error('Error creating answer:', err.message);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Get all answers for a specific question
+// Get answers for a question (public)
 const getAnswersForQuestion = async (req, res) => {
   try {
     const { questionId } = req.params;
-
-    // Ensure the questionId is provided in the request URL
-    if (!questionId) {
-      return res.status(400).json({ message: 'Question ID is required' });
+    if (!mongoose.Types.ObjectId.isValid(questionId)) {
+      return res.status(400).json({ message: "Invalid question id" });
     }
 
-    // Find all answers associated with the given questionId
     const answers = await Answer.find({ questionId })
-      .populate('userId', 'username') 
-      .populate('questionId', 'title'); 
+      .populate("authorId", "username")
+      .sort({ createdAt: -1 });
 
-    // If no answers are found for the question, return a 404
-    if (!answers.length) {
-      return res.status(404).json({ message: 'No answers found for this question' });
-    }
-
-    // Respond with the list of answers
-    return res.status(200).json(answers);
+    res.json(answers);
   } catch (err) {
-    console.error('Error fetching answers:', err.message);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("getAnswersForQuestion error", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-module.exports = {
-  createAnswer,
-  getAnswersForQuestion,
+// Post an answer (requires auth)
+const postAnswer = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { content } = req.body;
+    const userId = req.user && req.user._id;
+
+    if (!userId) return res.status(401).json({ message: "Authentication required" });
+
+    if (!mongoose.Types.ObjectId.isValid(questionId)) {
+      return res.status(400).json({ message: "Invalid question id" });
+    }
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Answer cannot be empty" });
+    }
+
+    const question = await Question.findById(questionId);
+    if (!question) return res.status(404).json({ message: "Question not found" });
+
+    const ans = await Answer.create({
+      questionId,
+      authorId: userId,
+      content: content.trim(),
+    });
+
+    const populated = await Answer.findById(ans._id).populate("authorId", "username");
+
+    res.status(201).json(populated);
+  } catch (err) {
+    console.error("postAnswer error", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
+
+module.exports = { getAnswersForQuestion, postAnswer };

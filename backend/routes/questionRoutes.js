@@ -1,19 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middlewares/auth");
 const {
   createQuestion,
   getQuestions,
   getQuestionById,
+  getQuestionsByCategory, 
 } = require("../controllers/questionController");
+const auth = require("../middlewares/auth");
 
-// POST - Create a question
-router.post("/", authMiddleware, createQuestion);
+// Protected: create a question
+router.post("/questions", auth, createQuestion);
 
-// GET - List all questions
-router.get("/", getQuestions);
+// Public: list questions (all), one by id
+router.get("/questions", getQuestions);
+router.get("/questions/:id", getQuestionById);
 
-// GET - Single question by ID
-router.get("/:id", getQuestionById);
+// Public: list by category
+router.get("/categories/:categoryId/questions", getQuestionsByCategory);
 
 module.exports = router;

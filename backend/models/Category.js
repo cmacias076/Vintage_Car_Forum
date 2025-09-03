@@ -1,5 +1,3 @@
-// models/Category.js
-
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema(
@@ -11,10 +9,14 @@ const categorySchema = new mongoose.Schema(
       trim: true,
       minlength: [3, 'Category name must be at least 3 characters long'],
     },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   { timestamps: true }
 );
 
 const Category = mongoose.model('Category', categorySchema);
-
 module.exports = Category;

@@ -1,32 +1,31 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   fetchUser,
   fetchCategories,
   fetchQuestions,
+  fetchQuestionsByCategory,
   createCategory,
   createQuestion,
 } from "../api";
 
-function asArray(maybeArray, nestedKey) {
-  if (Array.isArray(maybeArray)) return maybeArray;
-  if (maybeArray && nestedKey && Array.isArray(maybeArray[nestedKey])) {
-    return maybeArray[nestedKey];
-  }
-  return [];
-}
-
 function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState("");
 
   const [newCategory, setNewCategory] = useState("");
+  const [newCategoryDesc, setNewCategoryDesc] = useState("");
   const [newQuestionTitle, setNewQuestionTitle] = useState("");
   const [newQuestionContent, setNewQuestionContent] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  const [formErrors, setFormErrors] = useState({});
+  const activeCategoryFilter = searchParams.get("category") || null;
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -36,53 +35,85 @@ function Dashboard() {
     }
 
     fetchUser()
-      .then((data) => {
-        if (data && data.user) setUser(data.user);
-        else setError((data && data.message) || "Failed to fetch user");
-      })
+      .then((data) => { if (data?.user) setUser(data.user); else setError(data?.message || "Failed to fetch user"); })
       .catch((err) => setError(err.message || "Failed to fetch user"));
 
     fetchCategories()
-      .then((data) => setCategories(asArray(data, "categories")))
+      .then((data) => setCategories(Array.isArray(data) ? data : data?.categories || []))
       .catch((err) => console.error("Categories error:", err));
-
-    fetchQuestions()
-      .then((data) => setQuestions(asArray(data, "questions")))
-      .catch((err) => console.error("Questions error:", err));
   }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      if (activeCategoryFilter) {
+        const list = await fetchQuestionsByCategory(activeCategoryFilter);
+        setQuestions(Array.isArray(list) ? list : list?.questions || []);
+      } else {
+        const all = await fetchQuestions();
+        setQuestions(Array.isArray(all) ? all : all?.questions || []);
+      }
+    };
+    load();
+  }, [activeCategoryFilter]);
+
+  const validateQuestionForm = () => {
+    const errs = {};
+    if (!newQuestionTitle.trim()) errs.title = "Title is required.";
+    if (!newQuestionContent.trim()) errs.content = "Content is required.";
+    else if (!newQuestionContent.trim().endsWith("?"))
+      errs.content = 'Question must end with a question mark (?)';
+    if (!selectedCategory) errs.category = "Please choose a category.";
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    const name = newCategory.trim();
-    if (!name) return;
+    if (!newCategory.trim()) return;
 
-    const data = await createCategory(name);
-    const created = (data && data.category) || (data && data._id && data) || null;
+    const data = await createCategory(newCategory.trim(), newCategoryDesc.trim());
+    const created = (data && data._id && data) || data?.category || null;
 
     if (created) {
       setCategories((prev) => [...prev, created]);
       setNewCategory("");
+      setNewCategoryDesc("");
     } else {
-      alert((data && data.message) || "Failed to create category");
+      alert(data?.message || "Failed to create category");
     }
   };
 
   const handleAddQuestion = async (e) => {
     e.preventDefault();
-    const title = newQuestionTitle.trim();
-    const content = newQuestionContent.trim();
-    if (!title || !content || !selectedCategory) return;
+    if (!validateQuestionForm()) return;
 
-    const data = await createQuestion(title, content, selectedCategory);
-    const created = (data && data.question) || (data && data._id && data) || null;
+    const data = await createQuestion(
+      newQuestionTitle.trim(),
+      newQuestionContent.trim(),
+      selectedCategory
+    );
 
+    const created = (data && data._id && data) || data?.question || null;
     if (created) {
-      setQuestions((prev) => [...prev, created]);
+      const createdCatId = created.category?._id || created.category;
+      if (!activeCategoryFilter || activeCategoryFilter === createdCatId) {
+        setQuestions((prev) => [created, ...prev]);
+      }
       setNewQuestionTitle("");
       setNewQuestionContent("");
       setSelectedCategory("");
+      setFormErrors({});
     } else {
-      alert((data && data.message) || "Failed to create question");
+      alert(data?.message || "Failed to create question");
+    }
+  };
+
+  const handleFilterByCategory = (categoryId) => {
+    if (!categoryId) {
+      searchParams.delete("category");
+      setSearchParams(searchParams, { replace: true });
+    } else {
+      setSearchParams({ category: categoryId }, { replace: true });
     }
   };
 
@@ -94,9 +125,9 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <header style={{ display: "flex", justifyContent: "space-between" }}>
-        <h2>Vintage Car Forum Dashboard</h2>
+    <div style={{ padding: 16 }}>
+      <header style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+        <h2>Vintage Car Forum</h2>
         <div>
           {user && (
             <>
@@ -111,78 +142,137 @@ function Dashboard() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Categories */}
-      <h3>Categories</h3>
-      <ul>
-        {Array.isArray(categories) && categories.length > 0 ? (
-          categories.map((cat) => (
-            <li key={cat._id || cat.id || cat.name}>{cat.name}</li>
-          ))
-        ) : (
-          <li>No categories found</li>
-        )}
-      </ul>
+      <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 16 }}>
+        {/* LEFT RAIL */}
+        <aside className="left-rail">
+          <h3>Categories</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <button
+              onClick={() => handleFilterByCategory(null)}
+              style={{ textAlign: "left", fontWeight: !activeCategoryFilter ? "bold" : "normal" }}
+            >
+              All
+            </button>
+            {Array.isArray(categories) && categories.length > 0 ? (
+              categories.map((cat) => {
+                const id = cat._id || cat.id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => handleFilterByCategory(id)}
+                    style={{
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontWeight: activeCategoryFilter === id ? "bold" : "normal",
+                    }}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })
+            ) : (
+              <span>No categories found</span>
+            )}
+          </div>
 
-      <form onSubmit={handleAddCategory} style={{ marginBottom: 24 }}>
-        <input
-          type="text"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-          placeholder="New category name"
-        />
-        <button type="submit">Add Category</button>
-      </form>
+          {/* Add Category */}
+          <form onSubmit={handleAddCategory} style={{ marginTop: 16 }}>
+            <input
+              type="text"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              placeholder="New category name"
+              style={{ width: "100%", marginBottom: 6 }}
+            />
+            <input
+              type="text"
+              value={newCategoryDesc}
+              onChange={(e) => setNewCategoryDesc(e.target.value)}
+              placeholder="Description (optional)"
+              style={{ width: "100%", marginBottom: 6 }}
+            />
+            <button type="submit" style={{ width: "100%" }}>
+              Add Category
+            </button>
+          </form>
+        </aside>
 
-      {/* Questions */}
-      <h3>Questions</h3>
-      <ul>
-        {Array.isArray(questions) && questions.length > 0 ? (
-          questions.map((q) => (
-            <li key={q._id || q.id}>
-              <strong>
-                <Link to={`/question/${q._id || q.id}`}>
-                  {q.title || "(No title)"}
-                </Link>
-              </strong>
-              : {q.content || "(No content)"}{" "}
-              (Category: {q.category?.name || "N/A"})
-            </li>
-          ))
-        ) : (
-          <li>No questions found</li>
-        )}
-      </ul>
+        {/* MAIN */}
+        <main>
+          <h3>Questions</h3>
+          <ul>
+            {Array.isArray(questions) && questions.length > 0 ? (
+              questions.map((q) => (
+                <li key={q._id || q.id} style={{ marginBottom: 8 }}>
+                  <strong>
+                    <Link to={`/question/${q._id || q.id}`}>
+                      {q.title || "(No title)"}
+                    </Link>
+                  </strong>{" "}
+                  — {q.content || "(No content)"}{" "}
+                  <span style={{ color: "#666" }}>
+                    (Category: {q.category?.name || "N/A"})
+                  </span>
+                </li>
+              ))
+            ) : (
+              <li>No questions found</li>
+            )}
+          </ul>
 
-      <form onSubmit={handleAddQuestion}>
-        <input
-          type="text"
-          value={newQuestionTitle}
-          onChange={(e) => setNewQuestionTitle(e.target.value)}
-          placeholder="Question title"
-          required
-        />
-        <input
-          type="text"
-          value={newQuestionContent}
-          onChange={(e) => setNewQuestionContent(e.target.value)}
-          placeholder="Question details"
-          required
-        />
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          required
-        >
-          <option value="">Select category</option>
-          {Array.isArray(categories) &&
-            categories.map((cat) => (
-              <option key={cat._id || cat.id} value={cat._id || cat.id}>
-                {cat.name}
-              </option>
-            ))}
-        </select>
-        <button type="submit">Add Question</button>
-      </form>
+          {/* New Question */}
+          <form onSubmit={handleAddQuestion} style={{ marginTop: 16 }}>
+            <div style={{ marginBottom: 8 }}>
+              <input
+                type="text"
+                value={newQuestionTitle}
+                onChange={(e) => setNewQuestionTitle(e.target.value)}
+                placeholder="Question title"
+                required
+                style={{ width: "100%" }}
+              />
+              {formErrors.title && (
+                <div style={{ color: "red", fontSize: 12 }}>{formErrors.title}</div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: 8 }}>
+              <input
+                type="text"
+                value={newQuestionContent}
+                onChange={(e) => setNewQuestionContent(e.target.value)}
+                placeholder='Question details (end with "?")'
+                required
+                style={{ width: "100%" }}
+              />
+              {formErrors.content && (
+                <div style={{ color: "red", fontSize: 12 }}>{formErrors.content}</div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: 8 }}>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                required
+              >
+                <option value="">Select category</option>
+                {Array.isArray(categories) &&
+                  categories.map((cat) => (
+                    <option key={cat._id || cat.id} value={cat._id || cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+              </select>
+              {formErrors.category && (
+                <div style={{ color: "red", fontSize: 12 }}>{formErrors.category}</div>
+              )}
+            </div>
+
+            <button type="submit">Add Question</button>
+          </form>
+        </main>
+      </div>
     </div>
   );
 }

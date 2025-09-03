@@ -15,10 +15,10 @@ app.use(cors());
 app.use(express.json()); 
 
 // API Routes
-app.use('/api/auth', authRoutes); 
-app.use('/api/categories', categoryRoutes);
-app.use('/api/questions', questionRoutes); 
-app.use('/api/answers', answerRoutes); 
+app.use("/api/auth", authRoutes); 
+app.use("/api/categories", categoryRoutes);
+app.use("/api/", questionRoutes); 
+app.use("/api/", answerRoutes); 
 
 // Test route
 app.get('/', (req, res) => {
