@@ -1,33 +1,26 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-
 const User = require("./models/User");
 const Category = require("./models/Category");
 const Question = require("./models/Question");
 const Answer = require("./models/Answer");
 
 async function run() {
+  console.log("[seed] starting…");
   await mongoose.connect(process.env.MONGO_URI);
-  console.log("Mongo connected");
+  console.log("[seed] Mongo connected");
 
-  // 1) Ensure demo user (store PLAIN password here; pre-save will hash ONCE)
+  // 1) Force-create demo user with a known password (avoid double-hash forever)
   const email = "demo@example.com";
   const username = "demo";
-  const password = "Passw0rd!"; 
+  const password = "Passw0rd!";
 
-  let demoUser = await User.findOne({ email });
-  if (!demoUser) {
-    demoUser = new User({ username, email, passwordHash: password });
-    await demoUser.save();
-    console.log("Created demo user:", email);
-  } else {
-    // Reset password so you know the correct creds for demos
-    demoUser.passwordHash = password; 
-    await demoUser.save();
-    console.log("Reset demo user password:", email);
-  }
+  await User.deleteOne({ email });
+  console.log("[seed] removed existing demo user (if any)");
+  const demoUser = await new User({ username, email, passwordHash: password }).save();
+  console.log("[seed] created demo user:", email);
 
-  // 2) Seed categories (idempotent)
+  // 2) Categories (idempotent upsert)
   const cats = [
     { name: "Classic American Cars", description: "Ford, Chevrolet, Mopar, etc." },
     { name: "European Classics", description: "Jaguar, Mercedes, Alfa Romeo, etc." },
@@ -35,15 +28,14 @@ async function run() {
     { name: "Car Shows & Events", description: "Shows, meets, local events" },
     { name: "Parts & Accessories", description: "Finding parts, suppliers, fitment" },
   ];
-
   const upsertedCats = [];
   for (const c of cats) {
     const found = await Category.findOne({ name: c.name });
-    if (found) upsertedCats.push(found);
-    else upsertedCats.push(await Category.create(c));
+    upsertedCats.push(found || (await Category.create(c)));
   }
+  console.log("[seed] categories ready:", upsertedCats.map(c => c.name).join(", "));
 
-  // 3) Seed one question per category (only if none exist)
+  // 3) Only seed example questions/answers if none exist
   const countQ = await Question.countDocuments();
   if (countQ === 0) {
     const q1 = await Question.create({
@@ -58,27 +50,26 @@ async function run() {
       category: upsertedCats.find(c => c.name === "European Classics")._id,
       user: demoUser._id,
     });
-    const q3 = await Question.create({
-      title: "Paint first or mechanical first on a frame-off?",
-      content: "What's the smartest order of operations?",
-      category: upsertedCats.find(c => c.name === "Restoration Tips")._id,
-      user: demoUser._id,
-    });
-
     await Answer.create({
       questionId: q1._id,
       authorId: demoUser._id,
-      content: "1964½ models were released mid-1964; commonly referred to as 1965.",
+      content: "1964½ models launched mid-1964; commonly badged as 1965.",
     });
     await Answer.create({
       questionId: q2._id,
       authorId: demoUser._id,
-      content: "Blast only if panels are solid; otherwise phosphoric acid is safer.",
+      content: "If panels are thin, use phosphoric acid instead of blasting.",
     });
+    console.log("[seed] created sample questions/answers");
+  } else {
+    console.log("[seed] questions already exist; skipped creating samples");
   }
 
-  console.log("Seed complete.");
+  console.log("[seed] complete.");
   await mongoose.disconnect();
 }
 
-run
+run().catch(err => {
+  console.error("[seed] error:", err);
+  process.exit(1);
+});
