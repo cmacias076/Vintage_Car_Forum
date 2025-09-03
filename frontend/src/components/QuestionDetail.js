@@ -1,72 +1,162 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  fetchQuestionById,
+  fetchAnswers,
+  postAnswer,
+  fetchUser,
+} from "../api";
 
 function QuestionDetail() {
-  const { id } = useParams(); // gets question ID from the URL
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [user, setUser] = useState(null);
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [newAnswer, setNewAnswer] = useState("");
+  const [answerText, setAnswerText] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    
     const token = localStorage.getItem("authToken");
+    if (!token) {
+      setError("Please log in to view and answer questions.");
+    } else {
+      fetchUser().then((data) => {
+        if (data && data.user) setUser(data.user);
+      });
+    }
 
-    // Fetch question and its answers
-    fetch(`http://localhost:5000/api/questions/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
+    // Load single question
+    fetchQuestionById(id)
       .then((data) => {
-        setQuestion(data.question);
-        setAnswers(data.answers || []);
+        setQuestion(data && data._id ? data : data?.question || null);
       })
-      .catch((err) => console.error("Error fetching question:", err));
+      .catch(() => setError("Failed to fetch question"));
+
+    // Load answers
+    fetchAnswers(id)
+      .then((data) => {
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.answers)
+          ? data.answers
+          : [];
+        setAnswers(list);
+      })
+      .catch(() => setError("Failed to fetch answers"));
   }, [id]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmitAnswer = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("authToken");
+    setError("");
 
-    try {
-      const res = await fetch(`http://localhost:5000/api/answers`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: newAnswer, question: id }),
-      });
-      const data = await res.json();
-      setAnswers((prev) => [...prev, data.answer]); // add new answer to list
-      setNewAnswer(""); // clear input
-    } catch (err) {
-      console.error("Error submitting answer:", err);
+    const content = answerText.trim();
+    if (!content) {
+      setError("Answer cannot be empty.");
+      return;
+    }
+
+    const data = await postAnswer(id, content);
+  
+    if (data && data._id) {
+      setAnswers((prev) => [data, ...prev]);
+      setAnswerText("");
+    } else if (Array.isArray(data)) {
+      setAnswers(data);
+      setAnswerText("");
+    } else if (Array.isArray(data?.answers)) {
+      setAnswers(data.answers);
+      setAnswerText("");
+    } else {
+      setError(data?.message || "Failed to submit answer.");
     }
   };
 
-  if (!question) return <p>Loading question...</p>;
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    navigate("/");
+  };
+
+  if (!question && !error) {
+    return <p>Loading question…</p>;
+  }
 
   return (
     <div>
-      <h2>{question.content}</h2>
-      <h3>Answers:</h3>
-      <ul>
-        {answers.length > 0 ? (
-          answers.map((a) => <li key={a._id}>{a.content}</li>)
-        ) : (
-          <li>No answers yet</li>
-        )}
-      </ul>
+      <header style={{ display: "flex", justifyContent: "space-between" }}>
+        <nav>
+          <Link to="/dashboard">← Back to Dashboard</Link>
+        </nav>
+        <div>
+          {user ? (
+            <>
+              <span style={{ marginRight: 12 }}>
+                {user.username} ({user.email})
+              </span>
+              <button onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <Link to="/">Login</Link>
+          )}
+        </div>
+      </header>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Write your answer..."
-          value={newAnswer}
-          onChange={(e) => setNewAnswer(e.target.value)}
-          required
-        />
-        <button type="submit">Submit Answer</button>
-      </form>
+      <h2>Question Detail</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {question ? (
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ marginBottom: 4 }}>
+            {question.title || "(Untitled question)"}
+          </h3>
+          <p style={{ margin: 0 }}>{question.content}</p>
+          <p style={{ opacity: 0.7, marginTop: 8 }}>
+            Category: {question.category?.name || "N/A"} · By:{" "}
+            {question.user?.username || "Unknown"}
+          </p>
+        </div>
+      ) : (
+        <p>Question not found.</p>
+      )}
+
+      <section style={{ marginBottom: 24 }}>
+        <h4>Answers</h4>
+        {answers.length > 0 ? (
+          <ul>
+            {answers.map((a) => (
+              <li key={a._id || a.id}>
+                {a.content}{" "}
+                <span style={{ opacity: 0.7 }}>
+                  — {a.author?.username || a.user?.username || "Anonymous"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No answers yet.</p>
+        )}
+      </section>
+
+      {user ? (
+        <form onSubmit={handleSubmitAnswer}>
+          <textarea
+            rows={3}
+            placeholder="Write your answer…"
+            value={answerText}
+            onChange={(e) => setAnswerText(e.target.value)}
+            style={{ width: "100%", marginBottom: 8 }}
+          />
+          <div>
+            <button type="submit">Submit Answer</button>
+          </div>
+        </form>
+      ) : (
+        <p style={{ opacity: 0.7 }}>Log in to submit an answer.</p>
+      )}
     </div>
   );
 }

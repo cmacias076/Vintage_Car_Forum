@@ -62,6 +62,12 @@ export const createQuestion = async (title, content, categoryId) => {
   return res.json();
 };
 
+// NEW: single question
+export const fetchQuestionById = async (questionId) => {
+  const res = await fetch(`${API_URL}/questions/${questionId}`);
+  return res.json();
+};
+
 // ANSWERS
 export const fetchAnswers = async (questionId) => {
   const res = await fetch(`${API_URL}/questions/${questionId}/answers`, {
