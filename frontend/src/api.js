@@ -47,15 +47,15 @@ export const createCategory = async (name, description = "") => {
   return res.json();
 };
 
-// ---- QUESTIONS ----
+// ---- QUESTIONS (non-paged) ----
 export const fetchQuestions = async () => {
   const res = await fetch(`${API_URL}/questions`);
-  return res.json(); // array
+  return res.json();
 };
 
 export const fetchQuestionsByCategory = async (categoryId) => {
   const res = await fetch(`${API_URL}/categories/${categoryId}/questions`);
-  return res.json(); // array
+  return res.json(); 
 };
 
 export const createQuestion = async (title, content, categoryId) => {
@@ -69,13 +69,30 @@ export const createQuestion = async (title, content, categoryId) => {
 
 export const fetchQuestionById = async (questionId) => {
   const res = await fetch(`${API_URL}/questions/${questionId}`);
-  return res.json(); // question object
+  return res.json(); 
+};
+
+// ---- QUESTIONS (paged) ----
+export const fetchQuestionsPaged = async (limit = 10, cursor = null) => {
+  const url = new URL(`${API_URL}/questions-paged`);
+  url.searchParams.append("limit", limit);
+  if (cursor) url.searchParams.append("cursor", cursor);
+  const res = await fetch(url);
+  return res.json(); 
+};
+
+export const fetchQuestionsByCategoryPaged = async (categoryId, limit = 10, cursor = null) => {
+  const url = new URL(`${API_URL}/categories/${categoryId}/questions-paged`);
+  url.searchParams.append("limit", limit);
+  if (cursor) url.searchParams.append("cursor", cursor);
+  const res = await fetch(url);
+  return res.json(); 
 };
 
 // ---- ANSWERS ----
 export const fetchAnswers = async (questionId) => {
   const res = await fetch(`${API_URL}/questions/${questionId}/answers`);
-  return res.json(); // array
+  return res.json(); 
 };
 
 export const postAnswer = async (questionId, content) => {
@@ -84,5 +101,5 @@ export const postAnswer = async (questionId, content) => {
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ content }),
   });
-  return res.json(); // created answer
+  return res.json(); 
 };

@@ -8,21 +8,12 @@ const createQuestion = async (req, res) => {
     const { title, content, category } = req.body;
     const userId = req.user && req.user._id;
 
-    if (!userId) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
+    if (!userId) return res.status(401).json({ message: "Authentication required" });
 
-    // Validation
-    if (!title || !title.trim()) {
-      return res.status(400).json({ message: "Title is required" });
-    }
-    if (!content || !content.trim()) {
-      return res.status(400).json({ message: "Content is required" });
-    }
+    if (!title || !title.trim()) return res.status(400).json({ message: "Title is required" });
+    if (!content || !content.trim()) return res.status(400).json({ message: "Content is required" });
     if (!content.trim().endsWith("?")) {
-      return res
-        .status(400)
-        .json({ message: 'Question must end with a question mark (?)' });
+      return res.status(400).json({ message: 'Question must end with a question mark (?)' });
     }
     if (!category || !mongoose.Types.ObjectId.isValid(category)) {
       return res.status(400).json({ message: "Valid category id is required" });
@@ -38,14 +29,13 @@ const createQuestion = async (req, res) => {
       user: userId,
     });
 
-    // Return populated doc
     const populated = await Question.findById(q._id)
       .populate("category", "name")
       .populate("user", "username");
 
     return res.status(201).json(populated);
   } catch (err) {
-    console.error("createQuestion error:", err);
+    console.error("createQuestion error", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -57,10 +47,9 @@ const getQuestions = async (_req, res) => {
       .populate("user", "username")
       .populate("category", "name")
       .sort({ createdAt: -1 });
-
     return res.json(qs);
   } catch (err) {
-    console.error("getQuestions error:", err);
+    console.error("getQuestions error", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -81,12 +70,12 @@ const getQuestionById = async (req, res) => {
 
     return res.json(question);
   } catch (err) {
-    console.error("getQuestionById error:", err);
+    console.error("getQuestionById error", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-// Get questions by category (public) — newest first
+// Get questions by category (public) — newest first (non-paginated)
 const getQuestionsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
@@ -101,7 +90,32 @@ const getQuestionsByCategory = async (req, res) => {
 
     return res.json(qs);
   } catch (err) {
-    console.error("getQuestionsByCategory error:", err);
+    console.error("getQuestionsByCategory error", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get questions (optionally by category) with pagination
+const getQuestionsPaginated = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { limit = 10, cursor } = req.query;
+
+    const query = {};
+    if (categoryId) query.category = categoryId;
+    if (cursor) query.createdAt = { $lt: new Date(cursor) };
+
+    const items = await Question.find(query)
+      .populate("user", "username")
+      .populate("category", "name")
+      .sort({ createdAt: -1 })
+      .limit(Math.max(1, Math.min(Number(limit) || 10, 50))); // cap 50
+
+    const nextCursor = items.length ? items[items.length - 1].createdAt.toISOString() : null;
+
+    return res.json({ items, nextCursor });
+  } catch (err) {
+    console.error("getQuestionsPaginated error", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -111,4 +125,5 @@ module.exports = {
   getQuestions,
   getQuestionById,
   getQuestionsByCategory,
+  getQuestionsPaginated,
 };

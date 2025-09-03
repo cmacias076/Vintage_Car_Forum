@@ -3,10 +3,11 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   fetchUser,
   fetchCategories,
-  fetchQuestions,
-  fetchQuestionsByCategory,
   createCategory,
   createQuestion,
+  // paged:
+  fetchQuestionsPaged,
+  fetchQuestionsByCategoryPaged,
 } from "../api";
 
 function Dashboard() {
@@ -15,7 +16,11 @@ function Dashboard() {
 
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
+
   const [questions, setQuestions] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
 
   const [newCategory, setNewCategory] = useState("");
@@ -23,10 +28,11 @@ function Dashboard() {
   const [newQuestionTitle, setNewQuestionTitle] = useState("");
   const [newQuestionContent, setNewQuestionContent] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-
   const [formErrors, setFormErrors] = useState({});
+
   const activeCategoryFilter = searchParams.get("category") || null;
 
+  // boot
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -43,17 +49,43 @@ function Dashboard() {
       .catch((err) => console.error("Categories error:", err));
   }, []);
 
-  useEffect(() => {
-    const load = async () => {
+  // load questions (paged)
+  const loadQuestions = async ({ reset } = { reset: false }) => {
+    const isInitial = reset || questions.length === 0;
+    if (isInitial) setLoading(true); else setLoadingMore(true);
+
+    try {
+      let data;
       if (activeCategoryFilter) {
-        const list = await fetchQuestionsByCategory(activeCategoryFilter);
-        setQuestions(Array.isArray(list) ? list : list?.questions || []);
+        data = await fetchQuestionsByCategoryPaged(
+          activeCategoryFilter,
+          5,
+          isInitial ? null : nextCursor
+        );
       } else {
-        const all = await fetchQuestions();
-        setQuestions(Array.isArray(all) ? all : all?.questions || []);
+        data = await fetchQuestionsPaged(5, isInitial ? null : nextCursor);
       }
-    };
-    load();
+
+      if (isInitial) {
+        setQuestions(data.items || []);
+      } else {
+        setQuestions((prev) => [...prev, ...(data.items || [])]);
+      }
+      setNextCursor(data.nextCursor || null);
+    } catch (err) {
+      console.error("loadQuestions error:", err);
+      setError("Failed to load questions.");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    setQuestions([]);
+    setNextCursor(null);
+    loadQuestions({ reset: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategoryFilter]);
 
   const validateQuestionForm = () => {
@@ -200,6 +232,9 @@ function Dashboard() {
         {/* MAIN */}
         <main>
           <h3>Questions</h3>
+
+          {loading && questions.length === 0 && <p>Loading questions…</p>}
+
           <ul>
             {Array.isArray(questions) && questions.length > 0 ? (
               questions.map((q) => (
@@ -215,10 +250,18 @@ function Dashboard() {
                   </span>
                 </li>
               ))
-            ) : (
+            ) : !loading ? (
               <li>No questions found</li>
-            )}
+            ) : null}
           </ul>
+
+          {loadingMore && <p>Loading more…</p>}
+
+          {!loading && nextCursor && (
+            <button onClick={() => loadQuestions({ reset: false })}>
+              Load more
+            </button>
+          )}
 
           {/* New Question */}
           <form onSubmit={handleAddQuestion} style={{ marginTop: 16 }}>

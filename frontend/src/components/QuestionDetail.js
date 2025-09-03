@@ -14,6 +14,9 @@ function QuestionDetail() {
   const [user, setUser] = useState(null);
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
+
+  const [loadingQ, setLoadingQ] = useState(true);
+  const [loadingA, setLoadingA] = useState(true);
   const [error, setError] = useState("");
 
   const [answerText, setAnswerText] = useState("");
@@ -30,13 +33,17 @@ function QuestionDetail() {
       });
     }
 
+    setLoadingQ(true);
     fetchQuestionById(id)
       .then((data) => setQuestion(data && data._id ? data : data?.question || null))
-      .catch(() => setError("Failed to fetch question"));
+      .catch(() => setError("Failed to fetch question"))
+      .finally(() => setLoadingQ(false));
 
+    setLoadingA(true);
     fetchAnswers(id)
       .then((data) => setAnswers(Array.isArray(data) ? data : data?.answers || []))
-      .catch(() => setError("Failed to fetch answers"));
+      .catch(() => setError("Failed to fetch answers"))
+      .finally(() => setLoadingA(false));
   }, [id]);
 
   const openModal = () => {
@@ -75,8 +82,6 @@ function QuestionDetail() {
     navigate("/");
   };
 
-  if (!question && !error) return <p style={{ padding: 16 }}>Loading question…</p>;
-
   return (
     <div style={{ padding: 16 }}>
       <header style={{ display: "flex", justifyContent: "space-between" }}>
@@ -100,7 +105,9 @@ function QuestionDetail() {
       <h2>Question Detail</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {question ? (
+      {loadingQ ? (
+        <p>Loading question…</p>
+      ) : question ? (
         <div style={{ marginBottom: 24 }}>
           <h3 style={{ marginBottom: 4 }}>{question.title || "(Untitled question)"}</h3>
           <p style={{ margin: 0 }}>{question.content}</p>
@@ -116,7 +123,9 @@ function QuestionDetail() {
 
       <section style={{ marginBottom: 24 }}>
         <h4>Answers</h4>
-        {answers.length > 0 ? (
+        {loadingA ? (
+          <p>Loading answers…</p>
+        ) : answers.length > 0 ? (
           <ul>
             {answers.map((a) => (
               <li key={a._id || a.id} style={{ marginBottom: 8 }}>
