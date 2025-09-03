@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../api";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -7,36 +8,28 @@ function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill in both fields");
+      return;
+    }
 
     try {
-      const res = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await loginUser(email, password);
 
-      const data = await res.json();
-
-      if (res.ok) {
-        // Save JWT token in localStorage
+      if (data.token) {
         localStorage.setItem("authToken", data.token);
-
-        // Optional: Save username/email for dashboard use
         localStorage.setItem("username", data.user.username);
         localStorage.setItem("email", data.user.email);
-
-        console.log("Login successful:", data);
-        navigate("/dashboard"); // Redirect to dashboard
+        navigate("/dashboard");
       } else {
-        // Show backend error message
         setError(data.message || "Login failed");
       }
     } catch (err) {
-      console.error("Login failed:", err);
-      setError("Network error. Please try again.");
+      setError(err.message || "Login failed. Please try again.");
     }
   };
 
@@ -44,22 +37,31 @@ function Login() {
     <div>
       <h2>Login</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
+
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="Enter your email"
+          />
+        </div>
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Enter your password"
+          />
+        </div>
+        <div>
+          <button type="submit">Login</button>
+        </div>
       </form>
     </div>
   );

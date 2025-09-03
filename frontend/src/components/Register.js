@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../api";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -8,33 +9,28 @@ function Register() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
+
+    if (!username || !email || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
 
     try {
-      const res = await fetch("http://localhost:5000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
+      const data = await registerUser(username, email, password);
 
-      const data = await res.json();
-
-      if (res.ok) {
-        // Save JWT token if returned by your backend
-        if (data.token) {
-          localStorage.setItem("authToken", data.token);
-        }
-
-        console.log("Registration successful:", data);
-        navigate("/dashboard"); // Redirect to dashboard
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("username", data.user.username);
+        localStorage.setItem("email", data.user.email);
+        navigate("/dashboard");
       } else {
         setError(data.message || "Registration failed");
       }
     } catch (err) {
-      console.error("Registration failed:", err);
-      setError("Network error. Please try again.");
+      setError(err.message || "Registration failed. Please try again.");
     }
   };
 
@@ -42,29 +38,37 @@ function Register() {
     <div>
       <h2>Register</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Username:</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <button type="submit">Register</button>
+        </div>
       </form>
     </div>
   );
