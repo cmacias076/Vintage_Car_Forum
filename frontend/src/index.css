@@ -11,3 +11,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.left-rail {
+  width: 260px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  border-right: 1px solid #eee;
+  padding-right: 12px;
+}
+
+dialog::backdrop {
+  background: rgba(0,0,0,0.35);
+}
