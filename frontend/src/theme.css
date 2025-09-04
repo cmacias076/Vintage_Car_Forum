@@ -2,14 +2,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
 
 :root {
-  --bg: #f5efe0;            
+  --bg: #f5efe0;           
   --bg-2: #f1e7d3;
   --text: #2a2a2a;          
   --muted: #6b6b6b;
 
-  --primary: #7a1c1c;      
+  --primary: #7a1c1c;     
   --primary-600: #5e1515;
-  --accent: #d4af37;        
+  --accent: #d4af37;      
   --accent-600: #b99424;
 
   --card: #ffffff;
@@ -20,33 +20,24 @@
 }
 
 /* Page base */
-html, body, #root {
-  height: 100%;
-}
+html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background:
-    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  background: linear-gradient(180deg, #f9f4e7 0%, #f1e7d3 100%);
+  background-image:
+    radial-gradient(circle at top left, rgba(212,175,55,0.08) 0%, transparent 40%),
+    radial-gradient(circle at bottom right, rgba(122,28,28,0.08) 0%, transparent 40%);
   color: var(--text);
   font-family: 'Lato', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.55;
 }
 
 /* Generic containers */
-div, section, main, header, footer, ul, li, form {
-  box-sizing: border-box;
-}
+div, section, main, header, footer, ul, li, form { box-sizing: border-box; }
 
 /* Links */
-a {
-  color: var(--primary);
-  text-decoration: none;
-  transition: color .15s ease;
-}
-a:hover {
-  color: var(--accent-600);
-  text-decoration: underline;
-}
+a { color: var(--primary); text-decoration: none; transition: color .15s ease; }
+a:hover { color: var(--accent-600); text-decoration: underline; }
 
 /* Headings */
 h1, h2, h3 {
@@ -62,50 +53,51 @@ h3 { font-size: 1.2rem; }
 header {
   background: linear-gradient(180deg, var(--primary) 0%, var(--primary-600) 100%);
   color: #fff;
-  padding: 14px 18px !important; 
+  padding: 14px 18px !important;
   border-bottom: 3px solid var(--accent);
   box-shadow: 0 6px 16px rgba(0,0,0,.12);
 }
-header h2, header h3, header a {
-  color: #fff;
+header h2, header h3, header a { color: #fff; }
+header h2 {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+  letter-spacing: 1px;
 }
 header button {
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-600) 100%);
   color: #1b1b1b;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-weight: 700;
-  transition: transform .06s ease, background .2s ease, box-shadow .2s ease;
+  border: none; padding: 8px 14px;
+  border-radius: 10px; font-weight: 700;
+  transition: all .2s ease;
   box-shadow: 0 6px 12px rgba(0,0,0,.12);
 }
 header button:hover {
-  background: var(--accent-600);
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 18px rgba(0,0,0,.18);
 }
 
-/* Cards – used on lists, details, etc. */
-.cardish, ul li {
+/* Cards – lists, details, etc. */
+.cardish, ul li, .panel {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 8px 18px var(--shadow);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.panel, .auth-form { overflow: hidden; } 
+
+/* Hover lift */
+.panel:hover, .cardish:hover, ul li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 28px rgba(0,0,0,0.18);
 }
 
-/* Lists look like classy cards */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 12px 0 24px;
-}
-ul li {
-  padding: 14px 16px;
-  margin: 10px 0;
-}
-ul li strong {
-  font-family: 'Playfair Display', serif;
-  color: var(--primary-600);
-}
+/* Lists like classy cards */
+ul { list-style: none; padding: 0; margin: 12px 0 24px; }
+ul li { padding: 14px 16px; margin: 10px 0; }
+ul li strong { font-family: 'Playfair Display', serif; color: var(--primary-600); }
 
 /* Forms, inputs, selects, textarea */
 input[type="text"],
@@ -114,6 +106,9 @@ input[type="password"],
 select,
 textarea {
   width: 100%;
+  max-width: 100%;          
+  display: block;          
+  box-sizing: border-box;   
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -121,90 +116,69 @@ textarea {
   font-size: 0.98rem;
   color: var(--text);
   outline: none;
-  transition: border .15s ease, box-shadow .15s ease;
-  box-shadow: 0 4px 10px var(--shadow);
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05), 0 4px 10px var(--shadow);
 }
 textarea { resize: vertical; }
-input:focus,
-select:focus,
-textarea:focus {
+input:focus, select:focus, textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, .2);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.08), 0 0 0 3px rgba(212, 175, 55, 0.25);
 }
 
 /* Buttons (global) */
 button, .btn {
-  background: var(--primary);
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-600) 100%);
   color: #fff;
   border: none;
   border-radius: 12px;
   padding: 10px 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform .06s ease, background .2s ease, box-shadow .2s ease;
-  box-shadow: 0 10px 16px var(--shadow);
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 14px rgba(0,0,0,0.2);
 }
 button:hover, .btn:hover {
-  background: var(--primary-600);
-  transform: translateY(-1px);
+  background: linear-gradient(180deg, var(--primary-600) 0%, var(--primary) 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.25);
 }
-button:disabled {
-  background: #b9b1a2;
-  cursor: not-allowed;
-}
+button:disabled { background: #b9b1a2; cursor: not-allowed; }
 
-/* Helper: spacing around forms */
+/* Helper spacing */
 form > div { margin-bottom: 10px; }
 
-/* Inline error text */
-[style*="color: red"], .error {
-  color: #b00020 !important;
-  font-weight: 600;
-}
+/* Error text */
+[style*="color: red"], .error { color: #b00020 !important; font-weight: 600; }
 
-/* Gentle content wrapper so everything breathes */
-.App, body > div > div, 
-body > div {
+/* Content wrapper */
+.App, body > div > div, body > div {
   max-width: 1100px;
   margin: 24px auto;
   padding: 0 16px;
 }
 
-/* “Panel” feel for key sections when desired */
-.panel {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: 0 10px 18px var(--shadow);
-}
+/* Panel padding */
+.panel { padding: 16px; }
 
 /* Scrollable list helper */
-.scroll-list {
-  max-height: 340px;
-  overflow: auto;
-  padding-right: 6px;
-}
+.scroll-list { max-height: 340px; overflow: auto; padding-right: 6px; }
 
 /* Subtle gold rule */
 .hr {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  border: 0;
-  margin: 18px 0;
+  border: 0; margin: 18px 0;
 }
 
-/* Make links inside list items feel tappable */
+/* Tappable links */
 ul li a {
   display: inline-block;
   padding: 2px 0;
   border-bottom: 2px solid transparent;
 }
-ul li a:hover {
-  border-color: var(--accent);
-}
+ul li a:hover { border-color: var(--accent); }
 
-/* Small badge look for meta text */
+/* Meta badge */
 .meta {
   display: inline-block;
   font-size: .85rem;
@@ -215,13 +189,7 @@ ul li a:hover {
   background: #fff;
 }
 
-/* Responsive niceties */
-@media (max-width: 720px) {
-  header { padding: 12px 14px !important; }
-  .App, body > div > div, body > div { margin: 14px auto; }
-  button { width: 100%; }
-}
-/* Centered login/register form */
+/* Auth: centered form card */
 .auth-form {
   max-width: 420px;
   margin: 60px auto;
@@ -232,25 +200,100 @@ ul li a:hover {
   box-shadow: 0 12px 22px var(--shadow);
   text-align: left;
 }
+.auth-form h2 { text-align: center; margin-bottom: 20px; }
+.auth-form input, .auth-form button { width: 100%; }
 
-.auth-form h2 {
+/* Login page flair */
+.brand-mark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 8px;
+  color: var(--accent);
+  background: radial-gradient(circle at 35% 35%, rgba(212,175,55,.35), rgba(212,175,55,.15));
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,.12), inset 0 2px 6px rgba(255,255,255,.35);
+}
+.subtle { color: var(--muted); font-style: italic; letter-spacing: .2px; }
+
+/* two buttons side-by-side */
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* outline/ghost button */
+.btn-ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: 0 0 0 rgba(0,0,0,0);
   text-align: center;
-  margin-bottom: 20px;
+}
+.btn-ghost:hover {
+  background: var(--accent);
+  color: #1b1b1b;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 14px rgba(0,0,0,0.12);
 }
 
-/* Restrict input/button width inside auth forms */
-.auth-form input,
-.auth-form button {
-  width: 100%;
+/* password input with inline toggle */
+.password-wrapper { position: relative; display: flex; align-items: center; }
+.password-wrapper input { padding-right: 70px; }
+.small-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent);
+  color: #1b1b1b;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
+.small-toggle:hover { background: var(--accent-600); color: #fff; }
 
-/* Dashboard forms (category/question) */
-.inline-form {
-  max-width: 360px;
-}
-
+/* Dashboard small forms */
+.inline-form { max-width: 360px; width: 100%; }
 .inline-form input,
 .inline-form select,
-.inline-form button {
-  width: 100%;
+.inline-form textarea,
+.inline-form button { max-width: 100%; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  header { padding: 12px 14px !important; }
+  .App, body > div > div, body > div { margin: 14px auto; }
+  button { width: 100%; }
 }
+.auth-form .password-wrapper .small-toggle {
+  width: auto !important;     
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 10px;
+  line-height: 1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #1b1b1b;
+  border: none;
+  box-shadow: none;
+  z-index: 2;
+}
+
+
+.password-wrapper input {
+  padding-right: 86px; 
+}
+

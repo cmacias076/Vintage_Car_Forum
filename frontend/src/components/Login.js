@@ -5,7 +5,9 @@ import { loginUser } from "../api";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,6 +20,7 @@ function Login() {
     }
 
     try {
+      setLoading(true);
       const data = await loginUser(email, password);
 
       if (data.token) {
@@ -30,12 +33,34 @@ function Login() {
       }
     } catch (err) {
       setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const useDemo = () => {
+    setEmail("demo@example.com");
+    setPassword("Passw0rd!");
   };
 
   return (
     <div className="auth-form">
-      <h2>Login</h2>
+      {/* Vintage badge + title + tagline */}
+      <div className="brand-mark" aria-hidden>
+        <svg viewBox="0 0 64 32" width="36" height="18">
+          <path
+            d="M4 22h4l3-6h18l6 6h7c1.8 0 3 1.2 3 3v1H4v-1c0-1.8 1.2-3 3-3zM22 16l2-5h8l3 5H22z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <h2>Vintage Car Forum</h2>
+      <p className="subtle" style={{ textAlign: "center", marginTop: -6, marginBottom: 12 }}>
+        Classic rides, timeless answers.
+      </p>
+
+      <div className="hr" />
+
       {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit}>
@@ -47,26 +72,44 @@ function Login() {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="Enter your email"
+            autoComplete="email"
           />
         </div>
 
         <div style={{ marginBottom: 16 }}>
           <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Enter your password"
-          />
+          <div className="password-wrapper">
+            <input
+              type={showPwd ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Enter your password"
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="small-toggle"
+              onClick={() => setShowPwd((s) => !s)}
+              aria-label={showPwd ? "Hide password" : "Show password"}
+            >
+              {showPwd ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
 
-        <button type="submit">Login</button>
+        <div className="btn-row">
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in…" : "Login"}
+          </button>
+          <button type="button" className="btn-ghost" onClick={useDemo}>
+            Use Demo Account
+          </button>
+        </div>
       </form>
 
       <p style={{ marginTop: 14, textAlign: "center" }}>
-        Don’t have an account?{" "}
-        <Link to="/register">Register</Link>
+        Don’t have an account? <Link to="/register">Register</Link>
       </p>
     </div>
   );
