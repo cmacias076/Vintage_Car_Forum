@@ -1,0 +1,8 @@
+# Normalize text to LF in repo; Windows will still check out with CRLF unless core.autocrlf=input
+* text=auto
+
+# Force LF for code files
+*.js text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.md text eol=lf

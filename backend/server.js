@@ -12,13 +12,13 @@ const app = express();
 
 // Middlewares
 app.use(cors());
-app.use(express.json()); 
+app.use(express.json());
 
 // API Routes
-app.use("/api/auth", authRoutes); 
-app.use("/api/categories", categoryRoutes);
-app.use("/api/", questionRoutes); 
-app.use("/api/", answerRoutes); 
+app.use('/api/auth', authRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/', questionRoutes);
+app.use('/api/', answerRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -34,5 +34,5 @@ mongoose
   })
   .catch((err) => {
     console.error('MongoDB connection error: ', err);
-    process.exit(1); 
+    process.exit(1);
   });

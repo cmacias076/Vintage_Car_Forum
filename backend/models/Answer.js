@@ -1,17 +1,17 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const answerSchema = new mongoose.Schema(
   {
     content: { type: String, required: true, trim: true },
     questionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Question",
+      ref: 'Question',
       required: true,
       index: true,
     },
     authorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       index: true,
     },
@@ -21,4 +21,4 @@ const answerSchema = new mongoose.Schema(
 
 answerSchema.index({ createdAt: 1 });
 
-module.exports = mongoose.model("Answer", answerSchema);
+module.exports = mongoose.model('Answer', answerSchema);
