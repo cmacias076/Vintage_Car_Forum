@@ -1,21 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { loginUser } from "../api";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { loginUser } from '../api';
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     if (!email || !password) {
-      setError("Please fill in both fields");
+      setError('Please fill in both fields');
       return;
     }
 
@@ -24,28 +25,27 @@ function Login() {
       const data = await loginUser(email, password);
 
       if (data.token) {
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("username", data.user.username);
-        localStorage.setItem("email", data.user.email);
-        navigate("/dashboard");
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('username', data.user.username);
+        localStorage.setItem('email', data.user.email);
+        navigate('/dashboard');
       } else {
-        setError(data.message || "Login failed");
+        setError(data.message || 'Login failed');
       }
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const useDemo = () => {
-    setEmail("demo@example.com");
-    setPassword("Passw0rd!");
+    setEmail('demo@example.com');
+    setPassword('Passw0rd!');
   };
 
   return (
     <div className="auth-form">
-      {/* Vintage badge + title + tagline */}
       <div className="brand-mark" aria-hidden>
         <svg viewBox="0 0 64 32" width="36" height="18">
           <path
@@ -55,7 +55,7 @@ function Login() {
         </svg>
       </div>
       <h2>Vintage Car Forum</h2>
-      <p className="subtle" style={{ textAlign: "center", marginTop: -6, marginBottom: 12 }}>
+      <p className="subtle" style={{ textAlign: 'center', marginTop: -6, marginBottom: 12 }}>
         Classic rides, timeless answers.
       </p>
 
@@ -65,8 +65,9 @@ function Login() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 10 }}>
-          <label>Email:</label>
+          <label htmlFor="login-email">Email:</label>
           <input
+            id="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -77,10 +78,11 @@ function Login() {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label>Password:</label>
+          <label htmlFor="login-password">Password:</label>
           <div className="password-wrapper">
             <input
-              type={showPwd ? "text" : "password"}
+              id="login-password"
+              type={showPwd ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -91,16 +93,16 @@ function Login() {
               type="button"
               className="small-toggle"
               onClick={() => setShowPwd((s) => !s)}
-              aria-label={showPwd ? "Hide password" : "Show password"}
+              aria-label={showPwd ? 'Hide password' : 'Show password'}
             >
-              {showPwd ? "Hide" : "Show"}
+              {showPwd ? 'Hide' : 'Show'}
             </button>
           </div>
         </div>
 
         <div className="btn-row">
           <button type="submit" disabled={loading}>
-            {loading ? "Logging in…" : "Login"}
+            {loading ? 'Logging in…' : 'Login'}
           </button>
           <button type="button" className="btn-ghost" onClick={useDemo}>
             Use Demo Account
@@ -108,7 +110,7 @@ function Login() {
         </div>
       </form>
 
-      <p style={{ marginTop: 14, textAlign: "center" }}>
+      <p style={{ marginTop: 14, textAlign: 'center' }}>
         Don’t have an account? <Link to="/register">Register</Link>
       </p>
     </div>

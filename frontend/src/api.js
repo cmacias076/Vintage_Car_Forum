@@ -1,16 +1,16 @@
-const API_URL = "http://localhost:5000/api";
+const API_URL = 'http://localhost:5000/api';
 
 // Helper: get auth header
 const getAuthHeader = () => {
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem('authToken');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 // ---- AUTH ----
 export const registerUser = async (username, email, password) => {
   const res = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, email, password }),
   });
   return res.json();
@@ -18,8 +18,8 @@ export const registerUser = async (username, email, password) => {
 
 export const loginUser = async (email, password) => {
   const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
   return res.json();
@@ -27,7 +27,7 @@ export const loginUser = async (email, password) => {
 
 export const fetchUser = async () => {
   const res = await fetch(`${API_URL}/auth/user`, {
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
   });
   return res.json();
 };
@@ -38,10 +38,10 @@ export const fetchCategories = async () => {
   return res.json();
 };
 
-export const createCategory = async (name, description = "") => {
+export const createCategory = async (name, description = '') => {
   const res = await fetch(`${API_URL}/categories`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ name, description }),
   });
   return res.json();
@@ -55,13 +55,13 @@ export const fetchQuestions = async () => {
 
 export const fetchQuestionsByCategory = async (categoryId) => {
   const res = await fetch(`${API_URL}/categories/${categoryId}/questions`);
-  return res.json(); 
+  return res.json();
 };
 
 export const createQuestion = async (title, content, categoryId) => {
   const res = await fetch(`${API_URL}/questions`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ title, content, category: categoryId }),
   });
   return res.json();
@@ -69,37 +69,37 @@ export const createQuestion = async (title, content, categoryId) => {
 
 export const fetchQuestionById = async (questionId) => {
   const res = await fetch(`${API_URL}/questions/${questionId}`);
-  return res.json(); 
+  return res.json();
 };
 
 // ---- QUESTIONS (paged) ----
 export const fetchQuestionsPaged = async (limit = 10, cursor = null) => {
   const url = new URL(`${API_URL}/questions-paged`);
-  url.searchParams.append("limit", limit);
-  if (cursor) url.searchParams.append("cursor", cursor);
+  url.searchParams.append('limit', limit);
+  if (cursor) url.searchParams.append('cursor', cursor);
   const res = await fetch(url);
-  return res.json(); 
+  return res.json();
 };
 
 export const fetchQuestionsByCategoryPaged = async (categoryId, limit = 10, cursor = null) => {
   const url = new URL(`${API_URL}/categories/${categoryId}/questions-paged`);
-  url.searchParams.append("limit", limit);
-  if (cursor) url.searchParams.append("cursor", cursor);
+  url.searchParams.append('limit', limit);
+  if (cursor) url.searchParams.append('cursor', cursor);
   const res = await fetch(url);
-  return res.json(); 
+  return res.json();
 };
 
 // ---- ANSWERS ----
 export const fetchAnswers = async (questionId) => {
   const res = await fetch(`${API_URL}/questions/${questionId}/answers`);
-  return res.json(); 
+  return res.json();
 };
 
 export const postAnswer = async (questionId, content) => {
   const res = await fetch(`${API_URL}/questions/${questionId}/answers`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ content }),
   });
-  return res.json(); 
+  return res.json();
 };

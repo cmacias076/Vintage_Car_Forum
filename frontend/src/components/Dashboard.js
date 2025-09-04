@@ -1,12 +1,7 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  fetchUser,
-  fetchCategories,
-  fetchQuestions,
-  createCategory,
-  createQuestion,
-} from "../api";
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { createCategory, createQuestion, fetchCategories, fetchQuestions, fetchUser } from '../api';
 
 function asArray(maybeArray, nestedKey) {
   if (Array.isArray(maybeArray)) return maybeArray;
@@ -21,45 +16,45 @@ function Dashboard() {
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
   const [questions, setQuestions] = useState([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  const [newCategory, setNewCategory] = useState("");
-  const [newQuestionTitle, setNewQuestionTitle] = useState("");
-  const [newQuestionContent, setNewQuestionContent] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [newCategory, setNewCategory] = useState('');
+  const [newQuestionTitle, setNewQuestionTitle] = useState('');
+  const [newQuestionContent, setNewQuestionContent] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem('authToken');
     if (!token) {
-      setError("You are not logged in. Please login first.");
+      setError('You are not logged in. Please login first.');
       return;
     }
 
     fetchUser()
       .then((data) => {
         if (data && data.user) setUser(data.user);
-        else setError((data && data.message) || "Failed to fetch user");
+        else setError((data && data.message) || 'Failed to fetch user');
       })
-      .catch((err) => setError(err.message || "Failed to fetch user"));
+      .catch((err) => setError(err.message || 'Failed to fetch user'));
 
     fetchCategories()
-      .then((data) => setCategories(asArray(data, "categories")))
-      .catch((err) => console.error("Categories error:", err));
+      .then((data) => setCategories(asArray(data, 'categories')))
+      .catch((err) => console.error('Categories error:', err));
 
     fetchQuestions()
-      .then((data) => setQuestions(asArray(data, "questions")))
-      .catch((err) => console.error("Questions error:", err));
+      .then((data) => setQuestions(asArray(data, 'questions')))
+      .catch((err) => console.error('Questions error:', err));
   }, []);
 
   const validateQuestionForm = () => {
     const errs = {};
-    if (!newQuestionTitle.trim()) errs.title = "Title is required.";
-    if (!newQuestionContent.trim()) errs.content = "Content is required.";
-    else if (!newQuestionContent.trim().endsWith("?"))
-      errs.content = "Question must end with a question mark (?)";
-    if (!selectedCategory) errs.category = "Please choose a category.";
+    if (!newQuestionTitle.trim()) errs.title = 'Title is required.';
+    if (!newQuestionContent.trim()) errs.content = 'Content is required.';
+    else if (!newQuestionContent.trim().endsWith('?'))
+      errs.content = 'Question must end with a question mark (?)';
+    if (!selectedCategory) errs.category = 'Please choose a category.';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -73,9 +68,9 @@ function Dashboard() {
 
     if (created) {
       setCategories((prev) => [...prev, created]);
-      setNewCategory("");
+      setNewCategory('');
     } else {
-      alert((data && data.message) || "Failed to create category");
+      alert((data && data.message) || 'Failed to create category');
     }
   };
 
@@ -92,26 +87,26 @@ function Dashboard() {
     const created = (data && data.question) || (data && data._id && data) || null;
     if (created) {
       setQuestions((prev) => [created, ...prev]);
-      setNewQuestionTitle("");
-      setNewQuestionContent("");
-      setSelectedCategory("");
+      setNewQuestionTitle('');
+      setNewQuestionContent('');
+      setSelectedCategory('');
       setFormErrors({});
     } else {
-      alert((data && data.message) || "Failed to create question");
+      alert((data && data.message) || 'Failed to create question');
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("username");
-    localStorage.removeItem("email");
-    navigate("/");
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    localStorage.removeItem('email');
+    navigate('/');
   };
 
   return (
     <div>
       {/* Themed header (global styles in theme.css) */}
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>Vintage Car Forum</h2>
         <div>
           {user && (
@@ -128,7 +123,9 @@ function Dashboard() {
       {error && <p className="error">{error}</p>}
 
       {/* Categories */}
-      <section style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 24, alignItems: "start" }}>
+      <section
+        style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 24, alignItems: 'start' }}
+      >
         <aside>
           <h3>Categories</h3>
           <ul className="scroll-list panel">
@@ -152,7 +149,9 @@ function Dashboard() {
                 placeholder="New category name"
               />
             </div>
-            <button type="submit" className="btn">Add Category</button>
+            <button type="submit" className="btn">
+              Add Category
+            </button>
           </form>
         </aside>
 
@@ -164,15 +163,11 @@ function Dashboard() {
               questions.map((q) => (
                 <li key={q._id || q.id}>
                   <strong>
-                    <Link to={`/question/${q._id || q.id}`}>
-                      {q.title || "(No title)"}
-                    </Link>
+                    <Link to={`/question/${q._id || q.id}`}>{q.title || '(No title)'}</Link>
                   </strong>
                   <div style={{ marginTop: 4 }}>
-                    {q.content || "(No content)"}{" "}
-                    <span className="meta">
-                      Category: {q.category?.name || "N/A"}
-                    </span>
+                    {q.content || '(No content)'}{' '}
+                    <span className="meta">Category: {q.category?.name || 'N/A'}</span>
                   </div>
                 </li>
               ))
@@ -193,7 +188,9 @@ function Dashboard() {
                 required
               />
               {formErrors.title && (
-                <div className="error" style={{ fontSize: 12 }}>{formErrors.title}</div>
+                <div className="error" style={{ fontSize: 12 }}>
+                  {formErrors.title}
+                </div>
               )}
             </div>
 
@@ -206,7 +203,9 @@ function Dashboard() {
                 required
               />
               {formErrors.content && (
-                <div className="error" style={{ fontSize: 12 }}>{formErrors.content}</div>
+                <div className="error" style={{ fontSize: 12 }}>
+                  {formErrors.content}
+                </div>
               )}
             </div>
 
@@ -225,11 +224,15 @@ function Dashboard() {
                   ))}
               </select>
               {formErrors.category && (
-                <div className="error" style={{ fontSize: 12 }}>{formErrors.category}</div>
+                <div className="error" style={{ fontSize: 12 }}>
+                  {formErrors.category}
+                </div>
               )}
             </div>
 
-            <button type="submit" className="btn">Add Question</button>
+            <button type="submit" className="btn">
+              Add Question
+            </button>
           </form>
         </main>
       </section>

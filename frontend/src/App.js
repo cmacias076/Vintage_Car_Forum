@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Dashboard from "./components/Dashboard";
-import QuestionDetail from "./components/QuestionDetail";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import Dashboard from './components/Dashboard';
+import Login from './components/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+import QuestionDetail from './components/QuestionDetail';
+import Register from './components/Register';
 
 function App() {
   return (

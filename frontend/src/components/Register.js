@@ -1,22 +1,23 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { registerUser } from "../api";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { registerUser } from '../api';
 
 function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     if (!username || !email || !password) {
-      setError("Please fill in all fields");
+      setError('Please fill in all fields');
       return;
     }
 
@@ -25,15 +26,15 @@ function Register() {
       const data = await registerUser(username, email, password);
 
       if (data.token) {
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("username", data.user.username);
-        localStorage.setItem("email", data.user.email);
-        navigate("/dashboard");
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('username', data.user.username);
+        localStorage.setItem('email', data.user.email);
+        navigate('/dashboard');
       } else {
-        setError(data.message || "Registration failed");
+        setError(data.message || 'Registration failed');
       }
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -50,7 +51,7 @@ function Register() {
         </svg>
       </div>
       <h2>Create an Account</h2>
-      <p className="subtle" style={{ textAlign: "center", marginTop: -6, marginBottom: 12 }}>
+      <p className="subtle" style={{ textAlign: 'center', marginTop: -6, marginBottom: 12 }}>
         Join the community of classic car enthusiasts.
       </p>
 
@@ -60,8 +61,9 @@ function Register() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 10 }}>
-          <label>Username:</label>
+          <label htmlFor="reg-username">Username:</label>
           <input
+            id="reg-username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -72,8 +74,9 @@ function Register() {
         </div>
 
         <div style={{ marginBottom: 10 }}>
-          <label>Email:</label>
+          <label htmlFor="reg-email">Email:</label>
           <input
+            id="reg-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -84,10 +87,11 @@ function Register() {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label>Password:</label>
+          <label htmlFor="reg-password">Password:</label>
           <div className="password-wrapper">
             <input
-              type={showPwd ? "text" : "password"}
+              id="reg-password"
+              type={showPwd ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -98,18 +102,18 @@ function Register() {
               type="button"
               className="small-toggle"
               onClick={() => setShowPwd((s) => !s)}
-              aria-label={showPwd ? "Hide password" : "Show password"}
+              aria-label={showPwd ? 'Hide password' : 'Show password'}
             >
-              {showPwd ? "Hide" : "Show"}
+              {showPwd ? 'Hide' : 'Show'}
             </button>
           </div>
         </div>
 
         <div className="btn-row">
           <button type="submit" disabled={loading}>
-            {loading ? "Creating…" : "Create Account"}
+            {loading ? 'Creating…' : 'Create Account'}
           </button>
-          <Link to="/" className="btn-ghost" style={{ textAlign: "center", lineHeight: "38px" }}>
+          <Link to="/" className="btn-ghost" style={{ textAlign: 'center', lineHeight: '38px' }}>
             Back to Login
           </Link>
         </div>

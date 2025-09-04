@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  fetchQuestionById,
-  fetchAnswers,
-  postAnswer,
-  fetchUser,
-} from "../api";
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+
+import { fetchAnswers, fetchQuestionById, fetchUser, postAnswer } from '../api';
 
 function QuestionDetail() {
   const { id } = useParams();
@@ -14,13 +10,13 @@ function QuestionDetail() {
   const [user, setUser] = useState(null);
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [answerText, setAnswerText] = useState("");
-  const [error, setError] = useState("");
+  const [answerText, setAnswerText] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem('authToken');
     if (!token) {
-      setError("Please log in to view and answer questions.");
+      setError('Please log in to view and answer questions.');
     } else {
       fetchUser().then((data) => {
         if (data && data.user) setUser(data.user);
@@ -32,28 +28,24 @@ function QuestionDetail() {
       .then((data) => {
         setQuestion(data && data._id ? data : data?.question || null);
       })
-      .catch(() => setError("Failed to fetch question"));
+      .catch(() => setError('Failed to fetch question'));
 
     // Load answers
     fetchAnswers(id)
       .then((data) => {
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.answers)
-          ? data.answers
-          : [];
+        const list = Array.isArray(data) ? data : Array.isArray(data?.answers) ? data.answers : [];
         setAnswers(list);
       })
-      .catch(() => setError("Failed to fetch answers"));
+      .catch(() => setError('Failed to fetch answers'));
   }, [id]);
 
   const handleSubmitAnswer = async (e) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     const content = answerText.trim();
     if (!content) {
-      setError("Answer cannot be empty.");
+      setError('Answer cannot be empty.');
       return;
     }
 
@@ -61,23 +53,23 @@ function QuestionDetail() {
 
     if (data && data._id) {
       setAnswers((prev) => [data, ...prev]);
-      setAnswerText("");
+      setAnswerText('');
     } else if (Array.isArray(data)) {
       setAnswers(data);
-      setAnswerText("");
+      setAnswerText('');
     } else if (Array.isArray(data?.answers)) {
       setAnswers(data.answers);
-      setAnswerText("");
+      setAnswerText('');
     } else {
-      setError(data?.message || "Failed to submit answer.");
+      setError(data?.message || 'Failed to submit answer.');
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("username");
-    localStorage.removeItem("email");
-    navigate("/");
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    localStorage.removeItem('email');
+    navigate('/');
   };
 
   if (!question && !error) {
@@ -87,7 +79,7 @@ function QuestionDetail() {
   return (
     <div>
       {/* Themed header */}
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <nav>
           <Link to="/dashboard">← Back to Dashboard</Link>
         </nav>
@@ -110,17 +102,13 @@ function QuestionDetail() {
 
       {question ? (
         <div className="panel" style={{ marginBottom: 24 }}>
-          <h3 style={{ marginBottom: 4 }}>
-            {question.title || "(Untitled question)"}
-          </h3>
+          <h3 style={{ marginBottom: 4 }}>{question.title || '(Untitled question)'}</h3>
           <p style={{ margin: 0 }}>{question.content}</p>
           <p style={{ opacity: 0.8, marginTop: 10 }}>
             <span className="meta" style={{ marginRight: 8 }}>
-              Category: {question.category?.name || "N/A"}
+              Category: {question.category?.name || 'N/A'}
             </span>
-            <span className="meta">
-              By: {question.user?.username || "Unknown"}
-            </span>
+            <span className="meta">By: {question.user?.username || 'Unknown'}</span>
           </p>
         </div>
       ) : (
@@ -135,13 +123,15 @@ function QuestionDetail() {
               <li key={a._id || a.id}>
                 <div style={{ marginBottom: 6 }}>{a.content}</div>
                 <span className="meta">
-                  — {a.author?.username || a.user?.username || "Anonymous"}
+                  — {a.author?.username || a.user?.username || 'Anonymous'}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="panel" style={{ padding: 12, marginTop: 8 }}>No answers yet.</p>
+          <p className="panel" style={{ padding: 12, marginTop: 8 }}>
+            No answers yet.
+          </p>
         )}
       </section>
 
@@ -152,7 +142,7 @@ function QuestionDetail() {
             placeholder="Write your answer…"
             value={answerText}
             onChange={(e) => setAnswerText(e.target.value)}
-            style={{ width: "100%", marginBottom: 8 }}
+            style={{ width: '100%', marginBottom: 8 }}
           />
           <div>
             <button type="submit">Submit Answer</button>

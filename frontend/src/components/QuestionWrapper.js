@@ -1,6 +1,7 @@
-import { Routes, Route } from "react-router-dom";
-import Dashboard from "./Dashboard";
-import QuestionDetail from "./QuestionDetail";
+import { Routes, Route } from 'react-router-dom';
+
+import Dashboard from './Dashboard';
+import QuestionDetail from './QuestionDetail';
 
 function QuestionWrapper() {
   return (
