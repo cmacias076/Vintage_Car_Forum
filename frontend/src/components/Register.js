@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
 import { registerUser } from '../api';
+import '../theme.css';
 
 function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,23 +15,20 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
     if (!username || !email || !password) {
       setError('Please fill in all fields');
       return;
     }
-
     try {
       setLoading(true);
       const data = await registerUser(username, email, password);
-
-      if (data.token) {
+      if (data?.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('username', data.user.username);
         localStorage.setItem('email', data.user.email);
         navigate('/dashboard');
       } else {
-        setError(data.message || 'Registration failed');
+        setError(data?.message || 'Registration failed');
       }
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -42,78 +39,67 @@ function Register() {
 
   return (
     <div className="auth-form">
-      <div className="brand-mark" aria-hidden>
-        <svg viewBox="0 0 64 32" width="36" height="18">
-          <path
-            d="M4 22h4l3-6h18l6 6h7c1.8 0 3 1.2 3 3v1H4v-1c0-1.8 1.2-3 3-3zM22 16l2-5h8l3 5H22z"
-            fill="currentColor"
-          />
-        </svg>
+      <div className="brand-mark">
+        <span role="img" aria-label="steering-wheel">🛞</span>
       </div>
-      <h2>Create an Account</h2>
-      <p className="subtle" style={{ textAlign: 'center', marginTop: -6, marginBottom: 12 }}>
-        Join the community of classic car enthusiasts.
-      </p>
+      <h2 style={{ textAlign: 'center' }}>Create your account</h2>
+      <p className="tagline" style={{ textAlign: 'center' }}>Join the community of classic car enthusiasts.</p>
+      <hr className="hr" />
 
-      <div className="hr" />
-
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" style={{ marginBottom: 12 }}>{error}</p>}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 10 }}>
-          <label htmlFor="reg-username">Username:</label>
+        <div style={{ marginBottom: 12 }}>
+          <label htmlFor="username">Username:</label>
           <input
-            id="reg-username"
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            placeholder="Pick a display name"
             required
-            placeholder="Choose a username"
-            autoComplete="username"
           />
         </div>
 
-        <div style={{ marginBottom: 10 }}>
-          <label htmlFor="reg-email">Email:</label>
+        <div style={{ marginBottom: 12 }}>
+          <label htmlFor="email">Email:</label>
           <input
-            id="reg-email"
+            id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             placeholder="Enter your email"
-            autoComplete="email"
+            required
           />
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <label htmlFor="reg-password">Password:</label>
-          <div className="password-wrapper">
+        <div style={{ marginBottom: 12 }}>
+          <label htmlFor="password">Password:</label>
+          <div className="pw-row">
             <input
-              id="reg-password"
-              type={showPwd ? 'text' : 'password'}
+              id="password"
+              type={showPw ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Create a strong password"
               required
-              placeholder="Create a password"
-              autoComplete="new-password"
             />
             <button
               type="button"
-              className="small-toggle"
-              onClick={() => setShowPwd((s) => !s)}
-              aria-label={showPwd ? 'Hide password' : 'Show password'}
+              className="pw-toggle"
+              aria-label={showPw ? 'Hide password' : 'Show password'}
+              onClick={() => setShowPw((s) => !s)}
             >
-              {showPwd ? 'Hide' : 'Show'}
+              {showPw ? 'Hide' : 'Show'}
             </button>
           </div>
         </div>
 
-        <div className="btn-row">
+        <div style={{ display: 'flex', gap: 14, marginTop: 16 }}>
           <button type="submit" disabled={loading}>
             {loading ? 'Creating…' : 'Create Account'}
           </button>
-          <Link to="/" className="btn-ghost" style={{ textAlign: 'center', lineHeight: '38px' }}>
+          <Link className="btn-outline" to="/">
             Back to Login
           </Link>
         </div>

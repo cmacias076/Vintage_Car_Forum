@@ -1,34 +1,8 @@
 {
   "root": true,
-  "env": { "browser": true, "es2022": true, "node": true, "jest": true },
-  "parser": "@babel/eslint-parser",
-  "parserOptions": {
-    "requireConfigFile": false,
-    "ecmaVersion": 2022,
-    "sourceType": "module",
-    "ecmaFeatures": { "jsx": true },
-    "babelOptions": { "presets": ["@babel/preset-react"] }
-  },
-  "plugins": ["react", "react-hooks", "import", "jsx-a11y", "prettier"],
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:jsx-a11y/recommended",
-    "plugin:import/recommended",
-    "plugin:prettier/recommended"
-  ],
-  "settings": { "react": { "version": "detect" } },
+  "extends": ["react-app", "react-app/jest", "prettier"],
   "rules": {
-    "prettier/prettier": ["error", { "endOfLine": "lf" }],
-    "react/prop-types": "off",
-    "import/order": [
-      "warn",
-      {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-        "newlines-between": "always"
-      }
-    ]
-  },
-  "ignorePatterns": ["node_modules/", "build/", "dist/"]
+    "no-unused-vars": "warn",
+    "react/prop-types": "off"
+  }
 }

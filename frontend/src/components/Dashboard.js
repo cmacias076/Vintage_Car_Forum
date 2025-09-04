@@ -1,7 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-import { createCategory, createQuestion, fetchCategories, fetchQuestions, fetchUser } from '../api';
+import {
+  fetchUser,
+  fetchCategories,
+  fetchQuestions,
+  createCategory,
+  createQuestion,
+} from '../api';
 
 function asArray(maybeArray, nestedKey) {
   if (Array.isArray(maybeArray)) return maybeArray;
@@ -13,6 +18,7 @@ function asArray(maybeArray, nestedKey) {
 
 function Dashboard() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -52,8 +58,9 @@ function Dashboard() {
     const errs = {};
     if (!newQuestionTitle.trim()) errs.title = 'Title is required.';
     if (!newQuestionContent.trim()) errs.content = 'Content is required.';
-    else if (!newQuestionContent.trim().endsWith('?'))
+    else if (!newQuestionContent.trim().endsWith('?')) {
       errs.content = 'Question must end with a question mark (?)';
+    }
     if (!selectedCategory) errs.category = 'Please choose a category.';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -64,7 +71,8 @@ function Dashboard() {
     if (!newCategory.trim()) return;
 
     const data = await createCategory(newCategory.trim());
-    const created = (data && data.category) || (data && data._id && data) || null;
+    const created =
+      (data && data.category) || (data && data._id && data) || null;
 
     if (created) {
       setCategories((prev) => [...prev, created]);
@@ -84,7 +92,9 @@ function Dashboard() {
       selectedCategory
     );
 
-    const created = (data && data.question) || (data && data._id && data) || null;
+    const created =
+      (data && data.question) || (data && data._id && data) || null;
+
     if (created) {
       setQuestions((prev) => [created, ...prev]);
       setNewQuestionTitle('');
@@ -105,137 +115,160 @@ function Dashboard() {
 
   return (
     <div>
-      {/* Themed header (global styles in theme.css) */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Vintage Car Forum</h2>
+      <header style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <h2>Vintage Car Forum Dashboard</h2>
         <div>
-          {user && (
+          {user ? (
             <>
               <span style={{ marginRight: 12 }}>
                 Welcome, {user.username} ({user.email})
               </span>
               <button onClick={handleLogout}>Logout</button>
             </>
+          ) : (
+            <span>Welcome Guest</span>
           )}
         </div>
       </header>
 
-      {error && <p className="error">{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {/* Categories */}
-      <section
-        style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 24, alignItems: 'start' }}
-      >
-        <aside>
-          <h3>Categories</h3>
-          <ul className="scroll-list panel">
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((cat) => (
-                <li key={cat._id || cat.id || cat.name}>
-                  <span>{cat.name}</span>
-                </li>
-              ))
-            ) : (
-              <li>No categories found</li>
-            )}
-          </ul>
-
-          <form onSubmit={handleAddCategory} className="panel">
-            <div style={{ marginBottom: 8 }}>
-              <input
-                type="text"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="New category name"
-              />
+      <div className="page-grid">
+        {/* LEFT COLUMN */}
+        <div>
+          {/* Add Category */}
+          <details className="section" open>
+            <summary>Add Category</summary>
+            <div className="section-body">
+              <form className="inline-form" onSubmit={handleAddCategory}>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="New category name"
+                />
+                <button type="submit" style={{ marginTop: 10 }}>
+                  Add Category
+                </button>
+              </form>
             </div>
-            <button type="submit" className="btn">
-              Add Category
-            </button>
-          </form>
-        </aside>
+          </details>
 
-        {/* Questions */}
-        <main>
-          <h3>Questions</h3>
-          <ul className="panel">
-            {Array.isArray(questions) && questions.length > 0 ? (
-              questions.map((q) => (
-                <li key={q._id || q.id}>
-                  <strong>
-                    <Link to={`/question/${q._id || q.id}`}>{q.title || '(No title)'}</Link>
-                  </strong>
-                  <div style={{ marginTop: 4 }}>
-                    {q.content || '(No content)'}{' '}
-                    <span className="meta">Category: {q.category?.name || 'N/A'}</span>
-                  </div>
-                </li>
-              ))
-            ) : (
-              <li>No questions found</li>
-            )}
-          </ul>
-
-          <div className="hr" />
-
-          <form onSubmit={handleAddQuestion} className="panel">
-            <div style={{ marginBottom: 8 }}>
-              <input
-                type="text"
-                value={newQuestionTitle}
-                onChange={(e) => setNewQuestionTitle(e.target.value)}
-                placeholder="Question title"
-                required
-              />
-              {formErrors.title && (
-                <div className="error" style={{ fontSize: 12 }}>
-                  {formErrors.title}
-                </div>
+          {/* Categories */}
+          <div className="panel category-panel">
+            <h3 className="section-title">Categories</h3>
+            <p style={{ marginTop: -6, opacity: 0.7 }}>
+              Browse topics by section
+            </p>
+            <ul className="scroll-list">
+              {Array.isArray(categories) && categories.length > 0 ? (
+                categories.map((cat) => (
+                  <li key={cat._id || cat.id} className="list-row">
+                    <span>{cat.name}</span>
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => setSelectedCategory(cat._id || cat.id)}
+                      title="Filter questions by this category"
+                    >
+                      View
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li>No categories found</li>
               )}
-            </div>
+            </ul>
+          </div>
+        </div>
 
-            <div style={{ marginBottom: 8 }}>
-              <input
-                type="text"
-                value={newQuestionContent}
-                onChange={(e) => setNewQuestionContent(e.target.value)}
-                placeholder="Question details (end with ?)"
-                required
-              />
-              {formErrors.content && (
-                <div className="error" style={{ fontSize: 12 }}>
-                  {formErrors.content}
+        {/* RIGHT COLUMN */}
+        <div>
+          {/* Add Question */}
+          <details className="section" open>
+            <summary>Add Question</summary>
+            <div className="section-body">
+              <form className="inline-form" onSubmit={handleAddQuestion}>
+                <div style={{ marginBottom: 8 }}>
+                  <input
+                    type="text"
+                    value={newQuestionTitle}
+                    onChange={(e) => setNewQuestionTitle(e.target.value)}
+                    placeholder="Question title"
+                    required
+                  />
+                  {formErrors.title && (
+                    <div style={{ color: 'red', fontSize: 12 }}>
+                      {formErrors.title}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div style={{ marginBottom: 12 }}>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                required
-              >
-                <option value="">Select category</option>
-                {Array.isArray(categories) &&
-                  categories.map((cat) => (
-                    <option key={cat._id || cat.id} value={cat._id || cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-              </select>
-              {formErrors.category && (
-                <div className="error" style={{ fontSize: 12 }}>
-                  {formErrors.category}
+                <div style={{ marginBottom: 8 }}>
+                  <input
+                    type="text"
+                    value={newQuestionContent}
+                    onChange={(e) => setNewQuestionContent(e.target.value)}
+                    placeholder="Question details"
+                    required
+                  />
+                  {formErrors.content && (
+                    <div style={{ color: 'red', fontSize: 12 }}>
+                      {formErrors.content}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <button type="submit" className="btn">
-              Add Question
-            </button>
-          </form>
-        </main>
-      </section>
+                <div style={{ marginBottom: 8 }}>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    required
+                  >
+                    <option value="">Select category</option>
+                    {Array.isArray(categories) &&
+                      categories.map((cat) => (
+                        <option key={cat._id || cat.id} value={cat._id || cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                  </select>
+                  {formErrors.category && (
+                    <div style={{ color: 'red', fontSize: 12 }}>
+                      {formErrors.category}
+                    </div>
+                  )}
+                </div>
+
+                <button type="submit">Add Question</button>
+              </form>
+            </div>
+          </details>
+
+          {/* Questions */}
+          <div className="panel">
+            <h3 className="section-title">All Questions</h3>
+            <ul>
+              {Array.isArray(questions) && questions.length > 0 ? (
+                questions.map((q) => (
+                  <li key={q._id || q.id}>
+                    <strong>
+                      <Link to={`/question/${q._id || q.id}`}>
+                        {q.title || '(No title)'}
+                      </Link>
+                    </strong>{' '}
+                    : {q.content || '(No content)'}{' '}
+                    <span className="meta">
+                      Category: {q.category?.name || 'N/A'}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <li>No questions found</li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

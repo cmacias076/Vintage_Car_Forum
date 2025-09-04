@@ -27,20 +27,10 @@ body,
 }
 body {
   margin: 0;
-  background: linear-gradient(180deg, #f9f4e7 0%, #f1e7d3 100%);
-  background-image:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at bottom right, rgba(122, 28, 28, 0.08) 0%, transparent 40%);
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   color: var(--text);
-  font-family:
-    'Lato',
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: 'Lato', system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+    Arial, sans-serif;
   line-height: 1.55;
 }
 
@@ -99,54 +89,31 @@ header h3,
 header a {
   color: #fff;
 }
-header h2 {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  color: var(--accent);
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
-  letter-spacing: 1px;
-}
 header button {
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-600) 100%);
+  background: var(--accent);
   color: #1b1b1b;
   border: none;
   padding: 8px 14px;
   border-radius: 10px;
   font-weight: 700;
-  transition: all 0.2s ease;
+  transition: transform 0.06s ease, background 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
 }
 header button:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 18px rgba(0, 0, 0, 0.18);
+  background: var(--accent-600);
+  transform: translateY(-1px);
 }
 
-/* Cards – lists, details, etc. */
+/* Cards & lists */
 .cardish,
 ul li,
 .panel {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.panel,
-.auth-form {
-  overflow: hidden;
+  box-shadow: 0 8px 18px var(--shadow);
 }
 
-/* Hover lift */
-.panel:hover,
-.cardish:hover,
-ul li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.18);
-}
-
-/* Lists like classy cards */
 ul {
   list-style: none;
   padding: 0;
@@ -161,16 +128,13 @@ ul li strong {
   color: var(--primary-600);
 }
 
-/* Forms, inputs, selects, textarea */
+/* Forms */
 input[type='text'],
 input[type='email'],
-input[type='password'],
+input[type="password"],
 select,
 textarea {
   width: 100%;
-  max-width: 100%;
-  display: block;
-  box-sizing: border-box;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -178,10 +142,11 @@ textarea {
   font-size: 0.98rem;
   color: var(--text);
   outline: none;
-  transition: all 0.2s ease;
-  box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.05),
-    0 4px 10px var(--shadow);
+  transition: border 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 10px var(--shadow);
+  box-sizing: border-box;
+  max-width: 100%;
+  display: block;
 }
 textarea {
   resize: vertical;
@@ -190,33 +155,42 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent);
-  box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.08),
-    0 0 0 3px rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
 }
 
-/* Buttons (global) */
+/* Buttons */
 button,
 .btn {
-  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-600) 100%);
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 12px;
   padding: 10px 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.2);
+  transition: transform 0.06s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 16px var(--shadow);
 }
 button:hover,
 .btn:hover {
-  background: linear-gradient(180deg, var(--primary-600) 0%, var(--primary) 100%);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+  background: var(--primary-600);
+  transform: translateY(-1px);
 }
 button:disabled {
   background: #b9b1a2;
   cursor: not-allowed;
+}
+
+/* Outline button variant for small actions */
+.btn-outline {
+  background: #fff;
+  color: var(--primary-600);
+  border: 2px solid var(--accent);
+  box-shadow: none;
+}
+.btn-outline:hover {
+  background: var(--accent);
+  color: #1b1b1b;
 }
 
 /* Helper spacing */
@@ -224,14 +198,14 @@ form > div {
   margin-bottom: 10px;
 }
 
-/* Error text */
+/* Inline error text */
 [style*='color: red'],
 .error {
   color: #b00020 !important;
   font-weight: 600;
 }
 
-/* Content wrapper */
+/* Outer wrapper */
 .App,
 body > div > div,
 body > div {
@@ -240,7 +214,7 @@ body > div {
   padding: 0 16px;
 }
 
-/* Panel padding */
+/* Panel */
 .panel {
   padding: 16px;
 }
@@ -252,7 +226,7 @@ body > div {
   padding-right: 6px;
 }
 
-/* Subtle gold rule */
+/* Decorative rule */
 .hr {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
@@ -260,7 +234,7 @@ body > div {
   margin: 18px 0;
 }
 
-/* Tappable links */
+/* Links inside list items */
 ul li a {
   display: inline-block;
   padding: 2px 0;
@@ -281,7 +255,7 @@ ul li a:hover {
   background: #fff;
 }
 
-/* Auth: centered form card */
+/* Auth form */
 .auth-form {
   max-width: 420px;
   margin: 60px auto;
@@ -301,88 +275,7 @@ ul li a:hover {
   width: 100%;
 }
 
-/* Login page flair */
-.brand-mark {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 8px;
-  color: var(--accent);
-  background: radial-gradient(
-    circle at 35% 35%,
-    rgba(212, 175, 55, 0.35),
-    rgba(212, 175, 55, 0.15)
-  );
-  border: 2px solid var(--accent);
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.12),
-    inset 0 2px 6px rgba(255, 255, 255, 0.35);
-}
-.subtle {
-  color: var(--muted);
-  font-style: italic;
-  letter-spacing: 0.2px;
-}
-
-/* two buttons side-by-side */
-.btn-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-/* outline/ghost button */
-.btn-ghost {
-  background: transparent;
-  color: var(--primary);
-  border: 2px solid var(--accent);
-  border-radius: 12px;
-  padding: 9px 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  text-align: center;
-}
-.btn-ghost:hover {
-  background: var(--accent);
-  color: #1b1b1b;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.12);
-}
-
-/* password input with inline toggle */
-.password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.password-wrapper input {
-  padding-right: 70px;
-}
-.small-toggle {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--accent);
-  color: #1b1b1b;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.small-toggle:hover {
-  background: var(--accent-600);
-  color: #fff;
-}
-
-/* Dashboard small forms */
+/* Compact inline forms used in dashboard cards */
 .inline-form {
   max-width: 360px;
   width: 100%;
@@ -394,7 +287,81 @@ ul li a:hover {
   max-width: 100%;
 }
 
-/* Responsive */
+
+/* Two-column layout */
+.page-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section heading */
+.section-title {
+  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-size: 1.35rem;
+  margin: 0 0 12px;
+  color: var(--primary-600);
+}
+
+/* Stylized collapsible sections */
+details.section {
+  margin: 0 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 8px 18px var(--shadow);
+  overflow: hidden;
+}
+details.section > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  color: var(--primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+details.section > summary::-webkit-details-marker {
+  display: none;
+}
+details.section > summary::after {
+  content: '▾';
+  font-size: 1rem;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+details.section[open] > summary::after {
+  transform: rotate(-180deg);
+}
+details.section .section-body {
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Category list capped height */
+.category-panel .scroll-list {
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* List row with trailing action */
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Responsive tweaks */
 @media (max-width: 720px) {
   header {
     padding: 12px 14px !important;
@@ -407,25 +374,4 @@ ul li a:hover {
   button {
     width: 100%;
   }
-}
-.auth-form .password-wrapper .small-toggle {
-  width: auto !important;
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 4px 10px;
-  line-height: 1;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #1b1b1b;
-  border: none;
-  box-shadow: none;
-  z-index: 2;
-}
-
-.password-wrapper input {
-  padding-right: 86px;
 }
