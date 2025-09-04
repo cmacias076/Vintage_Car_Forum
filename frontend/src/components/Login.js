@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../api";
 
 function Login() {
@@ -34,12 +34,12 @@ function Login() {
   };
 
   return (
-    <div>
+    <div className="auth-form">
       <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit}>
-        <div>
+        <div style={{ marginBottom: 10 }}>
           <label>Email:</label>
           <input
             type="email"
@@ -49,7 +49,8 @@ function Login() {
             placeholder="Enter your email"
           />
         </div>
-        <div>
+
+        <div style={{ marginBottom: 16 }}>
           <label>Password:</label>
           <input
             type="password"
@@ -59,10 +60,14 @@ function Login() {
             placeholder="Enter your password"
           />
         </div>
-        <div>
-          <button type="submit">Login</button>
-        </div>
+
+        <button type="submit">Login</button>
       </form>
+
+      <p style={{ marginTop: 14, textAlign: "center" }}>
+        Don’t have an account?{" "}
+        <Link to="/register">Register</Link>
+      </p>
     </div>
   );
 }
