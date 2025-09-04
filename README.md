@@ -139,6 +139,29 @@ The frontend talks to the backend at `http://localhost:5000/api`.
 
 ---
 
+## 🧹 Code Quality
+
+This project uses **ESLint + Prettier** to keep the codebase consistent.
+
+- Check lint errors:
+  ```bash
+  cd frontend
+  npm run lint
+  ```
+
+- Auto-fix issues:
+  ```bash
+  npm run lint:fix
+  ```
+
+- Format code:
+  ```bash
+  npm run format
+  ```
+  
+
+---
+
 ## 🐛 Troubleshooting
 
 - **MongoDB “not whitelisted”**  

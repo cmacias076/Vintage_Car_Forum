@@ -1,27 +1,26 @@
 {
+  "root": true,
+  "env": { "browser": true, "es2022": true, "node": true, "jest": true },
   "parser": "@babel/eslint-parser",
   "parserOptions": {
     "requireConfigFile": false,
-    "babelOptions": {
-      "presets": ["@babel/preset-react"]
-    }
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "ecmaFeatures": { "jsx": true },
+    "babelOptions": { "presets": ["@babel/preset-react"] }
   },
-  "env": {
-    "browser": true,
-    "es2021": true,
-    "jest": true
-  },
+  "plugins": ["react", "react-hooks", "import", "jsx-a11y", "prettier"],
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:import/recommended",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["react", "jsx-a11y", "import", "prettier"],
+  "settings": { "react": { "version": "detect" } },
   "rules": {
-    "prettier/prettier": ["error", { "singleQuote": true }],
-    "react/react-in-jsx-scope": "off",
+    "prettier/prettier": ["error", { "endOfLine": "lf" }],
     "react/prop-types": "off",
     "import/order": [
       "warn",
@@ -31,9 +30,5 @@
       }
     ]
   },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  }
+  "ignorePatterns": ["node_modules/", "build/", "dist/"]
 }
