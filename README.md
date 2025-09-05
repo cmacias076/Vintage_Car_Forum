@@ -4,6 +4,13 @@ A full-stack forum app (MERN): users can register/login, browse categories, ask 
 
 ---
 
+## 🌐 Live Demo
+
+- **Frontend (Netlify):** https://<your-netlify-site>.netlify.app 
+- **Backend (Render):** https://vintage-car-forum.onrender.com/api
+
+---
+
 ## 🚀 Demo Account
 
 After seeding (see instructions below), you can log in with:
